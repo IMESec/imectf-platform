@@ -1,71 +1,75 @@
 {
-    "english": {
-        "frame": {
-            "title": "tinyCTF",
-            "toggle": "Toggle navigation",
-            "login": "Sign in",
-            "register": "Register",
-            "logged_in": "Logged in as",
-            "logout": "log out"
-        },
-        "main": {
-            "title": "Hello World!",
-            "text": "Welcome text goes here"
-        },
-        "about": {
-            "title": "About",
-            "news": "News",
-            "news_text": "News go here",
-            "rules": "Rules",
-            "rules_text": "Rules go here"
-        },
-        "tasks": {
-            "title": "Tasks"
-        },
-        "task": {
-            "description": "Description",
-            "attachment": "Attachment",
-            "submit": "Submit",
-            "success": "Correct flag!",
-            "failure": "Incorrect flag",
-			"points_format": "%d points",
-            "solution_format": "solved by %d",
-            "no_description": "(none)",
-            "placeholder": "Flag goes here"
-        },
-		"addcat" : {
-			"title": "Add a Category",
-			"name_label": "Category Name: "
-		},
-		"addtask" : {
-			"add_title": "Add a Task",
-			"edit_title": "Edit a Task",
-			"delete_title": "Delete task",
-			"delete_desc": "Are you sure you want to delete this task?",
-			"cat_label": "Category: ",
-			"name_label": "Task Name: ",
-			"description_label": "Description: ",
-			"flag_label": "Flag: ",
-			"score_label": "Score: "
-		},
-        "scoreboard": {
-            "title": "Scoreboard",
-            "player": "Player",
-            "score": "Score"
-        },
-        "error": {
-            "title": "Error",
-            "unknown": "Unknown error",
-            "login_required": "You need to be logged in to see this page",
-            "admin_required": "You need to be an admin to see this page",
-            "invalid_credentials": "Invalid username or password",
-            "already_registered": "This user is already registered",
-            "empty_user": "Empty username is not allowed",
-            "task_not_found": "TBD",
-			"form": "Invalid form input",
-			"not_started": "Competition hasn't started yet"
+  "english": {
+    "frame": {
+      "title": "tinyCTF",
+      "toggle": "Toggle navigation",
+      "login": "Sign in",
+      "register": "Register",
+      "logged_in": "Logged in as",
+      "logout": "log out"
+    },
+    "main": {
+      "title": "Hello World!",
+      "text": "Welcome text goes here"
+    },
+    "about": {
+      "title": "About",
+      "news": "News",
+      "news_text": "News go here",
+      "rules": "Rules",
+      "rules_text": "Rules go here"
+    },
+    "tasks": {
+      "title": "Tasks"
+    },
+    "task": {
+      "description": "Description",
+      "attachment": "Attachment",
+      "submit": "Submit",
+      "success": "Correct flag!",
+      "failure": "Incorrect flag",
+      "points_format": "%d points",
+      "solution_format": "solved by %d",
+      "no_description": "(none)",
+      "placeholder": "Flag goes here",
+      "hint": "Hint",
+      "no_hint": "(none)",
+      "show_hint": "Show"
+    },
+    "addcat" : {
+      "title": "Add a Category",
+      "name_label": "Category Name: "
+    },
+    "addtask" : {
+      "add_title": "Add a Task",
+      "edit_title": "Edit a Task",
+      "delete_title": "Delete task",
+      "delete_desc": "Are you sure you want to delete this task?",
+      "cat_label": "Category: ",
+      "name_label": "Task Name: ",
+      "description_label": "Description: ",
+      "hint_label": "Hint: ",
+      "flag_label": "Flag: ",
+      "score_label": "Score: "
+    },
+    "scoreboard": {
+      "title": "Scoreboard",
+      "player": "Player",
+      "score": "Score"
+    },
+    "error": {
+      "title": "Error",
+      "unknown": "Unknown error",
+      "login_required": "You need to be logged in to see this page",
+      "admin_required": "You need to be an admin to see this page",
+      "invalid_credentials": "Invalid username or password",
+      "already_registered": "This user is already registered",
+      "empty_user": "Empty username is not allowed",
+      "task_not_found": "TBD",
+      "form": "Invalid form input",
+      "not_started": "Competition hasn't started yet"
 
 
-        }
     }
+  }
 }

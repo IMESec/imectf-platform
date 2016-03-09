@@ -153,7 +153,7 @@ def register_submit():
     from werkzeug.security import generate_password_hash
 
     username = request.form['user']
-    email = request.form['email']
+    #email = request.form['email']
     password = request.form['password']
 
     if not username:
@@ -175,7 +175,7 @@ def register_submit():
         return redirect('/error/not_started')
 
 
-    new_user = dict(username=username, email=email,
+    new_user = dict(username=username, #email=email,
         password=generate_password_hash(password), isAdmin=isAdmin,
         isHidden=isHidden)
     db['users'].insert(new_user)
@@ -301,6 +301,7 @@ def addtasksubmit(cat):
         desc = bleach.clean(request.form['desc'], tags=descAllowedTags)
         category = int(request.form['category'])
         score = int(request.form['score'])
+        hint = request.form['hint']
         flag = request.form['flag']
     except KeyError:
         return redirect('/error/form')
@@ -312,6 +313,7 @@ def addtasksubmit(cat):
                 desc=desc,
                 category=category,
                 score=score,
+                hint=hint,
                 flag=flag)
         file = request.files['file']
 
@@ -349,6 +351,7 @@ def edittasksubmit(tid):
         desc = bleach.clean(request.form['desc'], tags=descAllowedTags)
         category = int(request.form['category'])
         score = int(request.form['score'])
+        hint = request.form['hint']
         flag = request.form['flag']
     except KeyError:
         return redirect('/error/form')
@@ -360,6 +363,7 @@ def edittasksubmit(tid):
         task['name']=name
         task['desc']=desc
         task['category']=category
+        task['hint']=hint
         task['score']=score
 
         #only replace flag if value specified
