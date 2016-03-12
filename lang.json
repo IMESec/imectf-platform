@@ -87,9 +87,9 @@
     "about": {
       "title": "Sobre",
       "news": "Novidades",
-      "news_text": "Próxima competição no forno!",
+      "news_text": "Aproveitem as 48h para ver todas as questões, procurarem na internet, conversar com os outros da equipe.<br>O objetivo desse Capture The Flag é incentivar que todos pesquisem como as coisas funcionam, então aproveitem  para aprender!",
       "rules": "Regras",
-      "rules_text": "As regras serão descritas no começo da competição."
+      "rules_text": "- Equipes de até 3 pessoas utilizando apenas uma conta<br>- Toda consulta é válida e recomendada<br>- As flags devem ser submetidas com o formato: CTFIME{FLAG}"
     },
     "tasks": {
       "title": "Tarefas"
@@ -103,7 +103,7 @@
       "points_format": "%d pontos",
       "solution_format": "Resolvido por %d",
       "no_description": "(sem descrição)",
-      "placeholder": "Insira a flag aqui",
+      "placeholder": "CTFIME{insira a flag aqui}",
       "hint": "Dica",
       "no_hint": "(sem dicas)",
       "show_hint": "Mostrar"
@@ -140,12 +140,6 @@
       "task_not_found": "TBD",
       "form": "Entrada inválida",
       "not_started": "A competição ainda não começou!"
-
-
     }
   }
-
-
-
-
 }
