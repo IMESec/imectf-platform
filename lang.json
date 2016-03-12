@@ -1,7 +1,7 @@
 {
   "english": {
     "frame": {
-      "title": "tinyCTF",
+      "title": "CTFIME 0x0",
       "toggle": "Toggle navigation",
       "login": "Sign in",
       "register": "Register",
@@ -9,15 +9,15 @@
       "logout": "log out"
     },
     "main": {
-      "title": "Hello World!",
-      "text": "Welcome text goes here"
+      "title": "IMESEC - CTFIME 0x0",
+      "text": "Primeiro Capture The Flag realizado pela IME++/IMESEC"
     },
     "about": {
       "title": "About",
       "news": "News",
-      "news_text": "News go here",
+      "news_text": "Aproveitem as 48h para ver todas as questões, procurarem na internet, conversar com os outros da equipe.<br>O objetivo desse Capture The Flag é incentivar que todos pesquisem como as coisas funcionam, então aproveitem  para aprender!",
       "rules": "Rules",
-      "rules_text": "Rules go here"
+      "rules_text": "- Equipes de até 3 pessoas utilizando apenas uma conta<br>- Toda consulta é válida e recomendada<br>- As flags devem ser submetidas com o formato: CTFIME{FLAG}"
     },
     "tasks": {
       "title": "Tasks"
@@ -31,7 +31,7 @@
       "points_format": "%d points",
       "solution_format": "solved by %d",
       "no_description": "(none)",
-      "placeholder": "Flag goes here",
+      "placeholder": "CTFIME{insert_flag}",
       "hint": "Hint",
       "no_hint": "(none)",
       "show_hint": "Show"
@@ -68,8 +68,6 @@
       "task_not_found": "TBD",
       "form": "Invalid form input",
       "not_started": "Competition hasn't started yet"
-
-
     }
   }
 }

@@ -1,12 +1,12 @@
 {
-    "secret_key": "PLEASE_CHANGE_ME",
+    "secret_key": "imepprules",
     
     "host": "0.0.0.0",
-    "port": 8888,
+    "port": 4444,
 
 	"isProxied": false,
 
-	"startTime": "3-31-16 8:00AM",
+	"startTime": "3-12-16 0:00AM",
     
     "db": "sqlite:///ctf.db",
     
