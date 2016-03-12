@@ -69,5 +69,83 @@
       "form": "Invalid form input",
       "not_started": "Competition hasn't started yet"
     }
+  },
+
+  "portugues": {
+    "frame": {
+      "title": "CTFIME",
+      "toggle": "Mudar navegação;",
+      "login": "Entrar",
+      "register": "Registrar",
+      "logged_in": "Logado como",
+      "logout": "sair"
+    },
+    "main": {
+      "title": "CTFIME 0x01",
+      "text": "Seja bem vindo ao primeiro CTFIME!"
+    },
+    "about": {
+      "title": "Sobre",
+      "news": "Novidades",
+      "news_text": "Próxima competição no forno!",
+      "rules": "Regras",
+      "rules_text": "As regras serão descritas no começo da competição."
+    },
+    "tasks": {
+      "title": "Tarefas"
+    },
+    "task": {
+      "description": "Descrição",
+      "attachment": "Anexo",
+      "submit": "Enviar",
+      "success": "FLAG CORRETA!",
+      "failure": "Flag incorreta!",
+      "points_format": "%d pontos",
+      "solution_format": "Resolvido por %d",
+      "no_description": "(sem descrição)",
+      "placeholder": "Insira a flag aqui",
+      "hint": "Dica",
+      "no_hint": "(sem dicas)",
+      "show_hint": "Mostrar"
+    },
+    "addcat" : {
+      "title": "Adicionar categoria",
+      "name_label": "Nome da categoria: "
+    },
+    "addtask" : {
+      "add_title": "Adicionar tarefa",
+      "edit_title": "Editar tarefa",
+      "delete_title": "Deletar tarefa",
+      "delete_desc": "Tem certeza de que deseja deletar esta tarefa?",
+      "cat_label": "Categoria: ",
+      "name_label": "Nome da tarefa: ",
+      "description_label": "Descrição: ",
+      "hint_label": "Dica: ",
+      "flag_label": "Flag: ",
+      "score_label": "Pontuação: "
+    },
+    "scoreboard": {
+      "title": "Scoreboard",
+      "player": "Player",
+      "score": "Pontuação"
+    },
+    "error": {
+      "title": "Erro",
+      "unknown": "Erro desconhecido",
+      "login_required": "Você precisa se logar para ver esta página",
+      "admin_required": "Você precisa ser admin para ver esta página",
+      "invalid_credentials": "Nome de usuário ou senha incorretos",
+      "already_registered": "Este usuário já existe",
+      "empty_user": "Usuário vazio não permitido",
+      "task_not_found": "TBD",
+      "form": "Entrada inválida",
+      "not_started": "A competição ainda não começou!"
+
+
+    }
   }
+
+
+
+
 }
