@@ -70,11 +70,11 @@ def get_user():
 
     return None
 
-def get_task(tid):
+def get_task(comp_id, tid):
     """Finds a task with a given category and score"""
 
-    task = db.query("SELECT t.*, c.name cat_name FROM tasks t JOIN categories c on c.id = t.category WHERE t.id = :tid",
-            tid=tid)
+    task = db.query("SELECT t.*, c.name cat_name FROM tasks t JOIN categories c on c.id = t.category JOIN competitions comp ON comp.id=t.competition WHERE t.id = :tid AND t.competition = :comp_id",
+            tid=tid, comp_id=comp_id)
 
     return list(task)[0]
 
@@ -129,7 +129,7 @@ def login():
 
     if check_password_hash(user['password'], password):
         session_login(username)
-        return redirect('/tasks')
+        return redirect('/competitions')
 
     return redirect('/error/invalid_credentials')
 
@@ -183,12 +183,12 @@ def register_submit():
     # Set up the user id for this session
     session_login(username)
 
-    return redirect('/tasks')
+    return redirect('/competitions')
 
-@app.route('/tasks')
+@app.route('/tasks/<comp_id>/')
 @login_required
-def tasks():
-    """Displays all the tasks in a grid"""
+def tasks(comp_id):
+    """Displays all the tasks of a competition in a grid"""
 
     user = get_user()
     userCount = db['users'].count()
@@ -198,7 +198,7 @@ def tasks():
 
     flags = db['flags']
 
-    tasks = db.query("SELECT * FROM tasks ORDER BY category, score");
+    tasks = db.query("SELECT * FROM tasks WHERE competition = :comp_id ORDER BY category, score", comp_id=comp_id);
 
     tasks = list(tasks)
 
@@ -258,7 +258,7 @@ def tasks():
 
     # Render template
     render = render_template('frame.html', lang=lang, page='tasks.html',
-        user=user, categories=categories, grid=grid)
+        user=user, categories=categories, grid=grid, comp_id=comp_id)
     return make_response(render)
 
 @app.route('/addcat/', methods=['GET'])
@@ -280,6 +280,35 @@ def addcatsubmit():
         categories.insert(dict(name=name))
         return redirect('/tasks')
 
+
+
+@app.route('/addcompetition/', methods=['GET'])
+@admin_required
+def addcompetition():
+    user = get_user()
+
+    render = render_template('frame.html', lang=lang, user=user, page='addcompetition.html')
+    return make_response(render)
+
+@app.route('/addcompetition/', methods=['POST'])
+@admin_required
+def addcompetitionsubmit():
+    try:
+        desc = bleach.clean(request.form['desc'], tags=descAllowedTags)
+        desc = bleach.clean(request.form['desc'], tags=descAllowedTags)
+    except KeyError:
+        return redirect('/error/form')
+
+    else:
+        competitions = db['competitions']
+        competition = dict(
+                desc=desc)
+
+        competitions.insert(competition)
+        return redirect('/competitions')
+
+
+
 @app.route('/addtask/<cat>/', methods=['GET'])
 @admin_required
 def addtask(cat):
@@ -299,6 +328,7 @@ def addtasksubmit(cat):
     try:
         name = bleach.clean(request.form['name'], tags=[])
         desc = bleach.clean(request.form['desc'], tags=descAllowedTags)
+	competition = int(request.form['competition'])
         category = int(request.form['category'])
         score = int(request.form['score'])
         hint = request.form['hint']
@@ -311,6 +341,7 @@ def addtasksubmit(cat):
         task = dict(
                 name=name,
                 desc=desc,
+		competition=competition,
                 category=category,
                 score=score,
                 hint=hint,
@@ -406,14 +437,14 @@ def deletetasksubmit(tid):
     db['tasks'].delete(id=tid)
     return redirect('/tasks')
 
-@app.route('/tasks/<tid>/')
+@app.route('/tasks/<comp_id>/<tid>/')
 @login_required
-def task(tid):
-    """Displays a task with a given category and score"""
+def task(comp_id, tid):
+    """Displays a task of a given category with a given category and score"""
 
     user = get_user()
 
-    task = get_task(tid)
+    task = get_task(comp_id, tid)
     if not task:
         return redirect('/error/task_not_found')
 
@@ -484,6 +515,35 @@ def scoreboard_json():
     scores = list(scores)
 
     return Response(json.dumps(scores), mimetype='application/json')
+
+
+
+@app.route('/competitions')
+@login_required
+def competitions():
+    """Displays past competitions"""
+
+    user = get_user()
+    competitions = db.query('''select * from competitions''')
+
+    competitions = list(competitions)
+
+    # Render template
+    render = render_template('frame.html', lang=lang, page='competitions.html',
+        user=user, competitions=competitions)
+    return make_response(render)
+
+@app.route('/competitions.json')
+def competitions_json():
+    competitions = db.query('''select * from competitions''')
+
+    competitions = list(competitions)
+
+    return Response(json.dumps(competitions), competitions=competitions, mimetype='application/json')
+
+
+
+
 
 @app.route('/about')
 @login_required

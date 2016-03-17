@@ -1,9 +1,13 @@
 #!/bin/bash
 
-mkdir static/files
+#Create directory if it does not exist
+mkdir -p static/files
 
-sqlite3 ctf.db 'CREATE TABLE categories ( id INTEGER PRIMARY KEY, name TEXT );'
-sqlite3 ctf.db 'CREATE TABLE tasks (id INTEGER PRIMARY KEY, name TEXT, desc TEXT, file TEXT, flag TEXT, score INT, category INT, FOREIGN KEY(category) REFERENCES categories(id) ON DELETE CASCADE);'
+sqlite3 ctf.db 'CREATE TABLE competitions (id INTEGER PRIMARY KEY, desc TEXT, num_participants INTEGER, date_start TEXT, date_end TEXT)';
+
+sqlite3 ctf.db 'CREATE TABLE categories (id INTEGER PRIMARY KEY, name TEXT)';
+
+sqlite3 ctf.db 'CREATE TABLE tasks (id INTEGER PRIMARY KEY, competition INT, name TEXT, desc TEXT, file TEXT, flag TEXT, score INT, category INT, FOREIGN KEY(category) REFERENCES categories(id) ON DELETE CASCADE);'
 
 sqlite3 ctf.db 'CREATE TABLE users (id INTEGER PRIMARY KEY, username TEXT NOT NULL, email TEXT, isAdmin BOOLEAN, isHidden BOOLEAN, password TEXT)';
 
