@@ -6,14 +6,12 @@
       <form method="POST" enctype="multipart/form-data">
         
 	<input name="category" type="hidden" value="{{ cat_id }}" />
+	<input name="competition" type="hidden" value="{{ comp_id }}" />
 
         <label>{{ lang.addtask.name_label }}</label>
         <input name="name" type="text" required="required" class="form-control" />
-
-        <label>{{ lang.addtask.competition_id }}</label>
-        <input name="competition" type="number" required="required" class="form-control" />
-
-        <label>{{ lang.addtask.description_label }}</label>
+        
+	<label>{{ lang.addtask.description_label }}</label>
         <textarea name="desc" type="text" required="required" class="form-control" rows="10"></textarea>
 
         <label>{{ lang.addtask.score_label }}</label>

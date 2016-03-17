@@ -278,7 +278,7 @@ def addcatsubmit():
     else:
         categories = db['categories']
         categories.insert(dict(name=name))
-        return redirect('/tasks')
+        return redirect('/competitions')
 
 
 
@@ -295,23 +295,27 @@ def addcompetition():
 def addcompetitionsubmit():
     try:
         desc = bleach.clean(request.form['desc'], tags=descAllowedTags)
-        desc = bleach.clean(request.form['desc'], tags=descAllowedTags)
+        date_start  = bleach.clean(request.form['date_start'])
+        date_end  = bleach.clean(request.form['date_end'])
     except KeyError:
         return redirect('/error/form')
 
     else:
         competitions = db['competitions']
         competition = dict(
-                desc=desc)
+                desc=desc,
+		date_start=date_start,
+		date_end=date_end
+		)
 
         competitions.insert(competition)
         return redirect('/competitions')
 
 
 
-@app.route('/addtask/<cat>/', methods=['GET'])
+@app.route('/addtask/<comp_id>/<cat>/', methods=['GET'])
 @admin_required
-def addtask(cat):
+def addtask(comp_id, cat):
     category = db.query('SELECT * FROM categories LIMIT 1 OFFSET :cat', cat=cat)
     category = list(category)
     category = category[0]
@@ -319,16 +323,16 @@ def addtask(cat):
     user = get_user()
 
     render = render_template('frame.html', lang=lang, user=user,
-            cat_name=category['name'], cat_id=category['id'], page='addtask.html')
+            cat_name=category['name'], comp_id=comp_id, cat_id=category['id'], page='addtask.html')
     return make_response(render)
 
-@app.route('/addtask/<cat>/', methods=['POST'])
+@app.route('/addtask/<comp_id>/<cat>/', methods=['POST'])
 @admin_required
-def addtasksubmit(cat):
+def addtasksubmit(comp_id, cat):
     try:
         name = bleach.clean(request.form['name'], tags=[])
         desc = bleach.clean(request.form['desc'], tags=descAllowedTags)
-	competition = int(request.form['competition'])
+	competition = comp_id
         category = int(request.form['category'])
         score = int(request.form['score'])
         hint = request.form['hint']
@@ -359,7 +363,7 @@ def addtasksubmit(cat):
             task["file"] = filename
 
         tasks.insert(task)
-        return redirect('/tasks')
+        return redirect('/competitions')
 
 @app.route('/tasks/<tid>/edit', methods=['GET'])
 @admin_required

@@ -122,7 +122,9 @@
       "delete_desc": "Tem certeza de que deseja deletar esta competição?",
       "name_label": "Nome da competição: ",
       "description_label": "Descrição: ",
-      "add_date": "Data de início"
+      "date_start": "Data de início" ,
+      "date_end": "Data de término" ,
+      "num_participants": "Quantidade de participantes"
     },
    "addtask" : {
       "add_title": "Adicionar tarefa",
