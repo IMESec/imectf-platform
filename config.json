@@ -13,5 +13,5 @@
     "language_file": "lang.json",
     "language": "portugues",
 
-    "debug": false
+    "debug": true
 }
