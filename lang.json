@@ -67,7 +67,8 @@
       "empty_user": "Empty username is not allowed",
       "task_not_found": "TBD",
       "form": "Invalid form input",
-      "not_started": "Competition hasn't started yet"
+      "not_started": "Competition hasn't started yet",
+      "finished": "Competition has already ended"
     }
   },
 
@@ -139,7 +140,8 @@
       "empty_user": "Usuário vazio não permitido",
       "task_not_found": "TBD",
       "form": "Entrada inválida",
-      "not_started": "A competição ainda não começou!"
+      "not_started": "A competição ainda não começou!",
+      "finished": "A competição já acabou!"
     }
   }
 }

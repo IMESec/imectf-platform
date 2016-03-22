@@ -124,6 +124,8 @@ def login():
     password = request.form['password']
 
     user = db['users'].find_one(username=username)
+    if datetime.datetime.today() > config['endTime'] and user['isAdmin']==False:
+        return redirect('/error/finished')
     if user is None:
         return redirect('/error/invalid_credentials')
 
@@ -140,6 +142,9 @@ def register():
     userCount = db['users'].count()
     if datetime.datetime.today() < config['startTime'] and userCount != 0:
         return redirect('/error/not_started')
+
+    if datetime.datetime.today() > config['endTime'] and userCount != 0:
+        return redirect('/error/finished')
 
     # Render template
     render = render_template('frame.html', lang=lang,
@@ -529,6 +534,12 @@ if config['startTime']:
     config['startTime'] = dateparser.parse(config['startTime'])
 else:
     config['startTime'] = datetime.datetime.min
+
+if config['endTime']:
+    config['endTime'] = dateparser.parse(config['endTime'])
+else:
+    config['endTime'] = datetime.datetime.min
+
 
 # Load language
 lang_str = open(config['language_file'], 'rb').read()
