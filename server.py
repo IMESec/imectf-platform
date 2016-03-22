@@ -502,6 +502,17 @@ def about():
         user=user)
     return make_response(render)
 
+
+@app.route('/chat')
+@login_required
+def chat():
+    """Displays the IRC chat"""
+
+    # Render template
+    render = render_template('frame.html', lang=lang, page='chat.html')
+    return make_response(render)
+
+
 @app.route('/logout')
 @login_required
 def logout():

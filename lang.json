@@ -57,6 +57,9 @@
       "player": "Player",
       "score": "Score"
     },
+    "chat":{
+      "title": "Chat"
+    },
     "error": {
       "title": "Error",
       "unknown": "Unknown error",
@@ -129,6 +132,9 @@
       "title": "Scoreboard",
       "player": "Player",
       "score": "Pontuação"
+    },
+    "chat":{
+      "title": "Chat"
     },
     "error": {
       "title": "Erro",
