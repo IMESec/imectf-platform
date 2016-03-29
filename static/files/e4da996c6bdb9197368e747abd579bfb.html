@@ -1,0 +1,22 @@
+<head>
+<script>
+function validate() {
+	var user = document.getElementById("username").value;
+	var pass = document.getElementById("password").value;
+	if(user == "imectf" && pass=="seriously?"){
+		alert("CTFIME{wr0ng_w4y_0f_h4ndl1ng_l0g1n}");
+	}
+}
+</script>
+</head>
+<body>
+<h2>Check User</h2>
+<form id="form_id" method="post" name="myform">
+<label>username:</label>
+<input type="text" name="username" id="username"/>
+<label>password:</label>
+<input type="password" name="password" id="password"/>
+<input type="button" value="Login" id="submit" onclick="validate()"/>
+</form>
+</body>
+
