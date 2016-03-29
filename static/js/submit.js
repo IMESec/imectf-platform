@@ -1,10 +1,11 @@
 $("#flag-submission").click(function() {
 	var flag = $("#flag-input").val();
 
-	var id = $("#task-id").val()
+	var tid = $("#task-id").val()
+	var comp_id = $("#comp-id").val()
 
     $.ajax({
-        url: "/submit/" + id + "/" + btoa(flag)
+        url: "/submit/" + comp_id + "/" + tid + "/" + btoa(flag)
     }).done(function(data) {
 
         console.log(data);

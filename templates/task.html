@@ -35,6 +35,7 @@
         </p>
       {% endif %}
       <input id="task-id" type="hidden" value="{{ task.id }}" />
+      <input id="comp-id" type="hidden" value="{{ comp_id }}" />
       <input id="flag-input" type="text" class="form-control" 
         {% if task_done %} disabled="disabled" {% endif %}
         placeholder="{% if task_done %}{{ lang.task.success }}{% else %}{{ lang.task.placeholder }}{% endif %}">

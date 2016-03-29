@@ -461,17 +461,17 @@ def task(comp_id, tid):
     # Render template
     render = render_template('frame.html', lang=lang, page='task.html',
         task_done=task_done, login=login, solutions=solutions,
-        user=user, category=task["cat_name"], task=task, score=task["score"])
+        user=user, category=task["cat_name"], comp_id=comp_id, task=task, score=task["score"])
     return make_response(render)
 
-@app.route('/submit/<tid>/<flag>')
+@app.route('/submit/<comp_id>/<tid>/<flag>')
 @login_required
-def submit(tid, flag):
+def submit(comp_id, tid, flag):
     """Handles the submission of flags"""
 
     user = get_user()
 
-    task = get_task(tid)
+    task = get_task(comp_id, tid)
     flags = get_flags()
     task_done = task['id'] in flags
 
