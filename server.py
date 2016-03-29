@@ -285,7 +285,7 @@ def addcatsubmit():
         categories = db['categories']
         categories.insert(dict(name=name))
 
-        return redirect(url_for('tasks', comp_id=comp_id))
+        return redirect('/competitions')
 
 
 
