@@ -7,11 +7,12 @@
     "isProxied": false,
 
     "startTime": "3-18-16 15:30PM",
+    "endTime": "3-22-16 12:00PM",
     
     "db": "sqlite:///ctf.db",
     
     "language_file": "lang.json",
     "language": "portugues",
 
-    "debug": false
+    "debug": true
 }
