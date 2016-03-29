@@ -1,0 +1,27 @@
+<div class="landing-page container">
+  <table class="table table-striped">
+    <thead>
+	<tr>
+		<th>#</th>
+		<th>Nome</th>
+		<th>Início</th>
+		<th>Término</th>
+		<th><a href="/addcompetition">Nova competição</a></th>
+
+
+
+	</tr>
+    </thead>
+    <tbody>
+      {% for competition in competitions  %}
+      <tr>
+        <td>{{ loop.index }}</td>
+        <td>{{ competition.desc }}</td>
+        <td>{{ competition.date_start }}</td>
+        <td>{{ competition.date_end }}</td>
+        <td><a href="/tasks/{{ competition.id }}">Acessar</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>

@@ -116,11 +116,26 @@
       "title": "Adicionar categoria",
       "name_label": "Nome da categoria: "
     },
-    "addtask" : {
+   "competitions":{
+      "title": "Competições"
+   },
+   "addcompetition" : {
+      "add_title": "Nova competição",
+      "edit_title": "Editar competição",
+      "delete_title": "Deletar competição",
+      "delete_desc": "Tem certeza de que deseja deletar esta competição?",
+      "name_label": "Nome da competição: ",
+      "description_label": "Descrição: ",
+      "date_start": "Data de início" ,
+      "date_end": "Data de término" ,
+      "num_participants": "Quantidade de participantes"
+    },
+   "addtask" : {
       "add_title": "Adicionar tarefa",
       "edit_title": "Editar tarefa",
       "delete_title": "Deletar tarefa",
       "delete_desc": "Tem certeza de que deseja deletar esta tarefa?",
+      "competition_id": "Competição: ",
       "cat_label": "Categoria: ",
       "name_label": "Nome da tarefa: ",
       "description_label": "Descrição: ",

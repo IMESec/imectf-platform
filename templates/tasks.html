@@ -20,13 +20,13 @@
 	<div class="row">
 		{% for task in row %}
 		{% if task.id  %}
-		<a href="/tasks/{{ task.id }}">
+		<a href="/tasks/{{ comp_id  }}/{{ task.id }}">
 			<div style="animation-delay: -{{task.percentComplete}}s" class="chall-box chall-task col-md-1 {% if task.isComplete %}chall-done{% endif %}">
 				<span class="chall-box-score">{{ task.score }}</span>
 			</div>
 		</a>
 		{% elif task.end %}
-		<a href="/addtask/{{ task.category }}" >
+		<a href="/addtask/{{ comp_id }}/{{ task.category }}" >
 			<div class="add-box col-md-1">
 				+
 			</div>
