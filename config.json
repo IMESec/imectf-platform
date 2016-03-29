@@ -7,7 +7,7 @@
     "isProxied": false,
 
     "startTime": "3-12-16 0:00AM",
-    "endTime": "3-22-16 12:00PM",
+    "endTime": "3-30-16 12:00PM",
     
     "db": "sqlite:///ctf.db",
     
