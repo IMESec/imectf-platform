@@ -85,6 +85,12 @@ def get_flags():
         user_id=session['user_id'])
     return [f['task_id'] for f in list(flags)]
 
+def get_dates(comp_id):
+    """Returns the end and start dates of current competition"""
+   
+    dates = db['competitions'].find_one(id=comp_id)
+    return dates
+
 @app.route('/error/<msg>')
 def error(msg):
     """Displays an error message"""
@@ -126,10 +132,6 @@ def login():
     if user is None:
         return redirect('/error/invalid_credentials')
 
-    if datetime.datetime.today() > config['endTime']:
-        if user["isAdmin"] == False:
-	        return redirect('/error/finished')
-
     if check_password_hash(user['password'], password):
         session_login(username)
         return redirect('/competitions')
@@ -141,11 +143,6 @@ def register():
     """Displays the register form"""
 
     userCount = db['users'].count()
-    if datetime.datetime.today() < config['startTime'] and userCount != 0:
-        return redirect('/error/not_started')
-
-    if datetime.datetime.today() > config['endTime'] and userCount != 0:
-        return redirect('/error/finished')
 
     # Render template
     render = render_template('frame.html', lang=lang,
@@ -177,9 +174,6 @@ def register_submit():
     if userCount == 0:
         isAdmin = True
         isHidden = True
-    elif datetime.datetime.today() < config['startTime']:
-        return redirect('/error/not_started')
-
 
     new_user = dict(username=username, #email=email,
         password=generate_password_hash(password), isAdmin=isAdmin,
@@ -195,6 +189,17 @@ def register_submit():
 @login_required
 def tasks(comp_id):
     """Displays all the tasks of a competition in a grid"""
+
+    dates = get_dates(comp_id)
+ 
+    startDate = datetime.datetime.strptime(dates['date_start'], "%m-%d-%y %H:%M%p").date()
+    endDate = datetime.datetime.strptime(dates['date_end'], "%m-%d-%y %H:%M%p").date()
+
+    if datetime.datetime.today().date() < startDate:
+        return redirect('/error/not_started')
+
+    if datetime.datetime.today().date() > endDate:
+        return redirect('/error/finished')
 
     user = get_user()
     userCount = db['users'].count()
@@ -604,18 +609,6 @@ config_str = open('config.json', 'rb').read()
 config = json.loads(config_str)
 
 app.secret_key = config['secret_key']
-
-# Convert start date to python object
-if config['startTime']:
-    config['startTime'] = dateparser.parse(config['startTime'])
-else:
-    config['startTime'] = datetime.datetime.min
-
-if config['endTime']:
-    config['endTime'] = dateparser.parse(config['endTime'])
-else:
-    config['endTime'] = datetime.datetime.min
-
 
 # Load language
 lang_str = open(config['language_file'], 'rb').read()
