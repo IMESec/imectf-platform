@@ -124,10 +124,12 @@ def login():
     password = request.form['password']
 
     user = db['users'].find_one(username=username)
-    if datetime.datetime.today() > config['endTime'] and user['isAdmin']==False:
-        return redirect('/error/finished')
     if user is None:
         return redirect('/error/invalid_credentials')
+
+    if datetime.datetime.today() > config['endTime']:
+        if user["isAdmin"] == False:
+	        return redirect('/error/finished')
 
     if check_password_hash(user['password'], password):
         session_login(username)
