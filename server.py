@@ -190,15 +190,17 @@ def register_submit():
 def tasks(comp_id):
     """Displays all the tasks of a competition in a grid"""
 
+    user = get_user()
+
     dates = get_dates(comp_id)
- 
+	 
     startDate = datetime.datetime.strptime(dates['date_start'], "%m-%d-%y %H:%M%p").date()
     endDate = datetime.datetime.strptime(dates['date_end'], "%m-%d-%y %H:%M%p").date()
 
-    if datetime.datetime.today().date() < startDate:
+    if datetime.datetime.today().date() < startDate and not user['isAdmin']:
         return redirect('/error/not_started')
 
-    if datetime.datetime.today().date() > endDate:
+    if datetime.datetime.today().date() > endDate and not user['isAdmin']:
         return redirect('/error/finished')
 
     user = get_user()
