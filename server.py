@@ -76,6 +76,11 @@ def get_task(comp_id, tid):
     task = db.query("SELECT t.*, c.name cat_name FROM tasks t JOIN categories c on c.id = t.category JOIN competitions comp ON comp.id=t.competition WHERE t.id = :tid AND t.competition = :comp_id",
             tid=tid, comp_id=comp_id)
 
+#    tid=tid-1
+#    task = db.query("SELECT t.*, c.name cat_name FROM tasks t JOIN categories c on c.id = t.category JOIN competitions comp ON comp.id=t.competition WHERE t.competition=:comp_id ORDER BY t.id DESC LIMIT :tid, 1;",
+#            tid=tid, comp_id=comp_id)
+
+
     return list(task)[0]
 
 def get_flags():
@@ -278,7 +283,8 @@ def addcatsubmit():
     else:
         categories = db['categories']
         categories.insert(dict(name=name))
-        return redirect('/competitions')
+
+        return redirect(url_for('tasks', comp_id=comp_id))
 
 
 
@@ -363,14 +369,15 @@ def addtasksubmit(comp_id, cat):
             task["file"] = filename
 
         tasks.insert(task)
-        return redirect('/competitions')
 
-@app.route('/tasks/<tid>/edit', methods=['GET'])
+        return redirect(url_for('tasks', comp_id=comp_id))
+
+@app.route('/tasks/<comp_id>/<tid>/edit', methods=['GET'])
 @admin_required
-def edittask(tid):
+def edittask(comp_id, tid):
     user = get_user()
 
-    task = db["tasks"].find_one(id=tid);
+    task = db["tasks"].find_one(id=tid, competition=comp_id);
     category = db["categories"].find_one(id=task['category'])
 
     render = render_template('frame.html', lang=lang, user=user,
@@ -378,9 +385,9 @@ def edittask(tid):
             page='edittask.html', task=task)
     return make_response(render)
 
-@app.route('/tasks/<tid>/edit', methods=['POST'])
+@app.route('/tasks/<comp_id>/<tid>/edit', methods=['POST'])
 @admin_required
-def edittasksubmit(tid):
+def edittasksubmit(comp_id, tid):
     try:
         name = bleach.clean(request.form['name'], tags=[])
         desc = bleach.clean(request.form['desc'], tags=descAllowedTags)
@@ -393,7 +400,7 @@ def edittasksubmit(tid):
 
     else:
         tasks = db['tasks']
-        task = tasks.find_one(id=tid)
+        task = tasks.find_one(id=tid, competition=comp_id)
         task['id']=tid
         task['name']=name
         task['desc']=desc
@@ -423,23 +430,23 @@ def edittasksubmit(tid):
             task["file"] = filename
 
         tasks.update(task, ['id'])
-        return redirect('/tasks')
+        return redirect(url_for('tasks', comp_id=comp_id))
 
-@app.route('/tasks/<tid>/delete', methods=['GET'])
+@app.route('/tasks/<comp_id>/<tid>/delete', methods=['GET'])
 @admin_required
-def deletetask(tid):
+def deletetask(comp_id, tid):
     tasks = db['tasks']
-    task = tasks.find_one(id=tid)
+    task = tasks.find_one(id=tid, competition=comp_id)
 
     user = get_user()
     render = render_template('frame.html', lang=lang, user=user, page='deletetask.html', task=task)
     return make_response(render)
 
-@app.route('/tasks/<tid>/delete', methods=['POST'])
+@app.route('/tasks/<comp_id>/<tid>/delete', methods=['POST'])
 @admin_required
-def deletetasksubmit(tid):
+def deletetasksubmit(comp_id, tid):
     db['tasks'].delete(id=tid)
-    return redirect('/tasks')
+    return redirect(url_for('tasks', comp_id=comp_id))
 
 @app.route('/tasks/<comp_id>/<tid>/')
 @login_required
