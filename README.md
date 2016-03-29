@@ -58,3 +58,4 @@ Upgrades
 -------
 
 * This fork stores old competitions so it can run continously.
+* Fully translated to pt-br
