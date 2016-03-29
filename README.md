@@ -30,6 +30,10 @@ Install Flask and dataset
     easy_install bleach
     exit
     
+Install python-dateutil version 1.5:
+
+    pip install python-dateutil==1.5
+    
 Clone the repo
 
     git clone https://github.com/balidani/tinyctf-platform.git
@@ -49,3 +53,8 @@ Caveats
 -------
 
 * CSRF is currently not addressed
+
+Upgrades
+-------
+
+* This fork stores old competitions so it can run continously.
