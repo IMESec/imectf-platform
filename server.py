@@ -510,8 +510,10 @@ def about():
 def chat():
     """Displays the IRC chat"""
 
+    user = get_user()
+
     # Render template
-    render = render_template('frame.html', lang=lang, page='chat.html')
+    render = render_template('frame.html', lang=lang, page='chat.html', user=user)
     return make_response(render)
 
 
