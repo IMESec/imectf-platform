@@ -3,7 +3,7 @@
 #Create directory if it does not exist
 mkdir -p static/files
 
-sqlite3 ctf.db 'CREATE TABLE competitions (id INTEGER PRIMARY KEY, desc TEXT, num_participants INTEGER, date_start TEXT, date_end TEXT)';
+sqlite3 ctf.db 'CREATE TABLE competitions (id INTEGER PRIMARY KEY, desc TEXT, num_participants INTEGER, date_start TEXT, date_end TEXT, running INTEGER DEFAULT 0)';
 
 sqlite3 ctf.db 'CREATE TABLE categories (id INTEGER PRIMARY KEY, name TEXT)';
 

@@ -91,6 +91,17 @@ def get_dates(comp_id):
     dates = db['competitions'].find_one(id=comp_id)
     return dates
 
+def check_running(comp_id):
+    """   """
+    dates = get_dates(comp_id)
+	 
+    startDate = datetime.datetime.strptime(dates['date_start'], "%m-%d-%y %H:%M%p").date()
+    endDate = datetime.datetime.strptime(dates['date_end'], "%m-%d-%y %H:%M%p").date()
+
+    if datetime.datetime.today().date() > startDate:	
+	    if datetime.datetime.today().date() < endDate:
+	        db.query('UPDATE competitions SET running=1 WHERE id=:comp_id', comp_id=comp_id)
+
 @app.route('/error/<msg>')
 def error(msg):
     """Displays an error message"""
@@ -190,19 +201,7 @@ def register_submit():
 def tasks(comp_id):
     """Displays all the tasks of a competition in a grid"""
 
-    user = get_user()
-
-    dates = get_dates(comp_id)
-	 
-    startDate = datetime.datetime.strptime(dates['date_start'], "%m-%d-%y %H:%M%p").date()
-    endDate = datetime.datetime.strptime(dates['date_end'], "%m-%d-%y %H:%M%p").date()
-
-    if datetime.datetime.today().date() < startDate and not user['isAdmin']:
-        return redirect('/error/not_started')
-
-    if datetime.datetime.today().date() > endDate and not user['isAdmin']:
-        return redirect('/error/finished')
-
+    check_running(comp_id)
     user = get_user()
     userCount = db['users'].count()
 
@@ -315,11 +314,18 @@ def addcompetitionsubmit():
         return redirect('/error/form')
 
     else:
+
+	running=0
+	if datetime.datetime.today().date() > datetime.datetime.strptime(date_start, "%m-%d-%y %H:%M%p").date():
+		if datetime.datetime.today().date() < datetime.datetime.strptime(date_end, "%m-%d-%y %H:%M%p").date():
+			running = 1
+
         competitions = db['competitions']
         competition = dict(
                 desc=desc,
 		date_start=date_start,
-		date_end=date_end
+		date_end=date_end,
+		running=running
 		)
 
         competitions.insert(competition)
@@ -506,16 +512,13 @@ def submit(comp_id, tid, flag):
 
     return jsonify(result)
 
-@app.route('/scoreboard')
+@app.route('/scoreboard/<comp_id>/')
 @login_required
-def scoreboard():
+def scoreboard(comp_id):
     """Displays the scoreboard"""
 
     user = get_user()
-    scores = db.query('''select u.username, ifnull(sum(f.score), 0) as score,
-        max(timestamp) as last_submit from users u left join flags f
-        on u.id = f.user_id where u.isHidden = 0 group by u.username
-        order by score desc, last_submit asc''')
+    scores = db.query("select u.username, ifnull(sum(f.score), 0) as score, max(timestamp) as last_submit, t.competition FROM users u left join flags f ON u.id = f.user_id LEFT JOIN tasks t ON f.task_id = t.id where u.isHidden = 0 AND t.competition = :comp_id group by u.username order by score desc, last_submit asc", comp_id=comp_id)
 
     scores = list(scores)
 
@@ -523,6 +526,7 @@ def scoreboard():
     render = render_template('frame.html', lang=lang, page='scoreboard.html',
         user=user, scores=scores)
     return make_response(render)
+
 
 @app.route('/scoreboard.json')
 def scoreboard_json():
@@ -546,7 +550,7 @@ def competitions():
     competitions = db.query('''select * from competitions''')
 
     competitions = list(competitions)
-
+    
     # Render template
     render = render_template('frame.html', lang=lang, page='competitions.html',
         user=user, competitions=competitions)
