@@ -9,7 +9,7 @@
       "logout": "log out"
     },
     "main": {
-      "title": "IMESEC - CTFIME 0x0",
+      "title": "IMESEC",
       "text": "Primeiro Capture The Flag realizado pela IME++/IMESEC"
     },
     "about": {
@@ -85,8 +85,8 @@
       "logout": "sair"
     },
     "main": {
-      "title": "CTFIME 0x01",
-      "text": "Seja bem vindo ao primeiro CTFIME!"
+      "title": "IMESec - Banco de Questões",
+      "text": "Seja bem vindo ao banco de questões da IMESec"
     },
     "about": {
       "title": "Sobre",
@@ -116,8 +116,8 @@
       "title": "Adicionar categoria",
       "name_label": "Nome da categoria: "
     },
-   "competitions":{
-      "title": "Competições"
+   "reunions":{
+      "title": "Reuniões"
    },
    "addcompetition" : {
       "add_title": "Nova competição",

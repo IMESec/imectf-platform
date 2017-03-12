@@ -309,24 +309,16 @@ def addcompetitionsubmit():
     try:
         desc = bleach.clean(request.form['desc'], tags=descAllowedTags)
         date_start  = bleach.clean(request.form['date_start'])
-        date_end  = bleach.clean(request.form['date_end'])
     except KeyError:
         return redirect('/error/form')
 
-    else:
-
-	running=0
-	if datetime.datetime.today().date() > datetime.datetime.strptime(date_start, "%m-%d-%y %H:%M%p").date():
-		if datetime.datetime.today().date() < datetime.datetime.strptime(date_end, "%m-%d-%y %H:%M%p").date():
-			running = 1
+    else:	
 
         competitions = db['competitions']
         competition = dict(
-                desc=desc,
-		date_start=date_start,
-		date_end=date_end,
-		running=running
-		)
+            desc=desc,
+            date_start=date_start
+    	)
 
         competitions.insert(competition)
         return redirect('/competitions')

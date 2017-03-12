@@ -1,3 +1,8 @@
+<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<link rel="stylesheet" href="/resources/demos/style.css">
+<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
 <div class="landing-page container">
   <div class="row">
     <div class="task-box col-md-6 col-md-offset-3" >
@@ -9,11 +14,14 @@
         <label>{{ lang.addcompetition.description_label }}</label>
         <textarea name="desc" type="text" required="required" class="form-control" rows="10"></textarea>
 
-        <label>{{ lang.addcompetition.date_start }}</label>
-        <input name="date_start" type="text" required="required" class="form-control" />
+          <script>
+            $( function() {
+              $( "#datepicker" ).datepicker({ dateFormat: 'dd/mm/yy' });
+            } );
+          </script>
 
-        <label>{{ lang.addcompetition.date_end }}</label>
-        <input name="date_end" type="text" required="required" class="form-control" />
+        <label>{{ lang.addcompetition.date_start }}</label>
+        <input name="date_start" type="text" id="datepicker" required="required" class="form-control" />
 
         <input type="submit" class="form-control" />
       </form>

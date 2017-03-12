@@ -4,10 +4,13 @@
 	<tr>
 		<th>#</th>
 		<th>Nome</th>
-		<th>Início</th>
-		<th>Término</th>
-		<th><a href="/addcompetition">Nova competição</a></th>
-
+		<th>Data</th>
+		<!--<th>Término</th>-->
+		{% if user["isAdmin"] == true %}
+			<th><a href="/addcompetition">Nova competição</a></th>
+		{% else %}
+			<th> </th>
+		{% endif %}
 
 
 	</tr>
@@ -18,7 +21,7 @@
         <td>{{ loop.index }}</td>
         <td>{{ competition.desc }}</td>
         <td>{{ competition.date_start }}</td>
-        <td>{{ competition.date_end }}</td>
+        <!--<td>{{ competition.date_end }}</td>-->
         <td><a href="/tasks/{{ competition.id }}">Acessar</a></td>
       </tr>
       {% endfor %}
