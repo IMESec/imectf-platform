@@ -7,7 +7,9 @@
 		<th>Data</th>
 		<!--<th>Término</th>-->
 		{% if user["isAdmin"] == true %}
-			<th><a href="/addcompetition">Nova competição</a></th>
+			<th>
+				<a href="/addcompetition">Nova Lista</a>
+			</th>
 		{% else %}
 			<th> </th>
 		{% endif %}
@@ -22,7 +24,12 @@
         <td>{{ competition.desc }}</td>
         <td>{{ competition.date_start }}</td>
         <!--<td>{{ competition.date_end }}</td>-->
-        <td><a href="/tasks/{{ competition.id }}">Acessar</a></td>
+        <td>
+        	<a href="/tasks/{{ competition.id }}">Acessar</a>
+        	<form action="/delete/{{ competition.id }}" method="POST">
+        		<input type="submit" value="Deletar"/>
+        	</form>
+        </td>
       </tr>
       {% endfor %}
     </tbody>

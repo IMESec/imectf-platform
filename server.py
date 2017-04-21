@@ -201,7 +201,7 @@ def register_submit():
 def tasks(comp_id):
     """Displays all the tasks of a competition in a grid"""
 
-    check_running(comp_id)
+    #check_running(comp_id)
     user = get_user()
     userCount = db['users'].count()
 
@@ -325,28 +325,30 @@ def addcompetitionsubmit():
 
 
 
-@app.route('/addtask/<comp_id>/<cat>/', methods=['GET'])
+#@app.route('/addtask/<comp_id>/<cat>/', methods=['GET'])
+@app.route('/addtask/', methods=['GET'])
 @admin_required
-def addtask(comp_id, cat):
-    category = db.query('SELECT * FROM categories LIMIT 1 OFFSET :cat', cat=cat)
+def addtask():
+    #category = db.query('SELECT * FROM categories LIMIT 1 OFFSET :cat', cat=cat)
+    category = db.query('SELECT * FROM categories')
     category = list(category)
-    category = category[0]
+    #category = category[0]
 
     user = get_user()
 
     render = render_template('frame.html', lang=lang, user=user,
-            cat_name=category['name'], comp_id=comp_id, cat_id=category['id'], page='addtask.html')
+            categories=category, page='addtask.html')
     return make_response(render)
 
-@app.route('/addtask/<comp_id>/<cat>/', methods=['POST'])
+@app.route('/addtask/', methods=['POST'])
 @admin_required
-def addtasksubmit(comp_id, cat):
+def addtasksubmit():
     try:
         name = bleach.clean(request.form['name'], tags=[])
         desc = bleach.clean(request.form['desc'], tags=descAllowedTags)
-	competition = comp_id
+        #competition = comp_id
         category = int(request.form['category'])
-        score = int(request.form['score'])
+        #score = int(request.form['score'])
         hint = request.form['hint']
         flag = request.form['flag']
     except KeyError:
@@ -354,12 +356,11 @@ def addtasksubmit(comp_id, cat):
 
     else:
         tasks = db['tasks']
+        #task = dict(name=name,desc=desc,competition=competition,category=category,score=score,hint=hint,flag=flag)
         task = dict(
                 name=name,
                 desc=desc,
-		competition=competition,
                 category=category,
-                score=score,
                 hint=hint,
                 flag=flag)
         file = request.files['file']
@@ -376,29 +377,56 @@ def addtasksubmit(comp_id, cat):
 
         tasks.insert(task)
 
-        return redirect(url_for('tasks', comp_id=comp_id))
+        #return redirect(url_for('tasks', comp_id=comp_id))
+        return redirect(url_for('/listTasks'))
 
-@app.route('/tasks/<comp_id>/<tid>/edit', methods=['GET'])
+@app.route('/listTasks/', methods=['GET'])
 @admin_required
-def edittask(comp_id, tid):
+def listTasks():
+    category = db.query('SELECT * FROM categories')
+    category = list(category)
+    num_cat = len(category)
+
+    tasks = db.query('SELECT * FROM tasks')
+    tasks = list(tasks)
+
+    temp_list = []
+    task_cat = []
+    for i in range(num_cat):
+        temp_list.append(category[i])
+        for task in tasks:
+            if task['category'] == i + 1:
+                temp_list.append(task)
+
+        task_cat.append(temp_list)
+        temp_list = []
+
     user = get_user()
 
-    task = db["tasks"].find_one(id=tid, competition=comp_id);
-    category = db["categories"].find_one(id=task['category'])
+    render = render_template('frame.html', lang=lang, user=user,
+            task_cat=task_cat, tasks=tasks, page='listTasks.html')
+    return make_response(render)
+
+@app.route('/task/<tid>/edit', methods=['GET'])
+@admin_required
+def edittask(tid):
+    user = get_user()
+
+    task = db["tasks"].find_one(id=tid);
+    categories = db["categories"];
 
     render = render_template('frame.html', lang=lang, user=user,
-            cat_name=category['name'], cat_id=category['id'],
+            categories=categories,
             page='edittask.html', task=task)
     return make_response(render)
 
-@app.route('/tasks/<comp_id>/<tid>/edit', methods=['POST'])
+@app.route('/task/<tid>/edit', methods=['POST'])
 @admin_required
-def edittasksubmit(comp_id, tid):
+def edittasksubmit(tid):
     try:
         name = bleach.clean(request.form['name'], tags=[])
         desc = bleach.clean(request.form['desc'], tags=descAllowedTags)
         category = int(request.form['category'])
-        score = int(request.form['score'])
         hint = request.form['hint']
         flag = request.form['flag']
     except KeyError:
@@ -406,13 +434,12 @@ def edittasksubmit(comp_id, tid):
 
     else:
         tasks = db['tasks']
-        task = tasks.find_one(id=tid, competition=comp_id)
+        task = tasks.find_one(id=tid)
         task['id']=tid
         task['name']=name
         task['desc']=desc
         task['category']=category
         task['hint']=hint
-        task['score']=score
 
         #only replace flag if value specified
         if flag:
@@ -436,23 +463,23 @@ def edittasksubmit(comp_id, tid):
             task["file"] = filename
 
         tasks.update(task, ['id'])
-        return redirect(url_for('tasks', comp_id=comp_id))
+        return redirect(url_for('listTasks'))
 
-@app.route('/tasks/<comp_id>/<tid>/delete', methods=['GET'])
+@app.route('/task/<tid>/delete', methods=['GET'])
 @admin_required
-def deletetask(comp_id, tid):
+def deletetask(tid):
     tasks = db['tasks']
-    task = tasks.find_one(id=tid, competition=comp_id)
+    task = tasks.find_one(id=tid)
 
     user = get_user()
     render = render_template('frame.html', lang=lang, user=user, page='deletetask.html', task=task)
     return make_response(render)
 
-@app.route('/tasks/<comp_id>/<tid>/delete', methods=['POST'])
+@app.route('/task/<tid>/delete', methods=['POST'])
 @admin_required
-def deletetasksubmit(comp_id, tid):
+def deletetasksubmit(tid):
     db['tasks'].delete(id=tid)
-    return redirect(url_for('tasks', comp_id=comp_id))
+    return redirect(url_for('listTasks'))
 
 @app.route('/tasks/<comp_id>/<tid>/')
 @login_required
@@ -547,6 +574,17 @@ def competitions():
     render = render_template('frame.html', lang=lang, page='competitions.html',
         user=user, competitions=competitions)
     return make_response(render)
+
+@app.route('/delete/<postID>', methods=['POST'])
+@login_required
+def deleteCompetitions(postID):
+
+    user = get_user()
+    if user["isAdmin"]:
+        competitions = db.query('''delete from competitions where id = ''' + postID)
+        flash('Lista deletada com sucesso')
+    
+    return redirect('/competitions')
 
 @app.route('/competitions.json')
 def competitions_json():

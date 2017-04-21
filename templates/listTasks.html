@@ -1,0 +1,37 @@
+<div class="landing-page container">
+  <table class="table table-striped">
+    <thead>
+    	<tr>
+    		<th>Name</th>
+        <th>Description</th>
+        <th><a href="/addtask">Nova Task</a></th>
+    	</tr>
+    </thead>
+
+    <tbody id="accordion">
+      {% for tasks in task_cat  %}
+      {% set category = tasks.pop(0) %}
+      <thead class="clickable" data-toggle="collapse" id="{{ category.id }}" data-target="#{{ category.id }}collapsed">
+        <tr>
+          <th>{{ category.name }}</td> 
+          <th></th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody class="collapse" id="{{ category.id }}collapsed">
+        {% for task in tasks  %}
+        <tr>
+          <td>{{ task.name }}</td>
+          <td>{{ task.desc }}</td>
+          <td>
+            <a href="/task/{{ task.id }}/delete">Delete</a>
+            <a href="/task/{{ task.id }}/edit">Edit</a>
+          </td>
+        </tr>
+        {% endfor %}
+        {% endfor %}
+      </tbody>
+    </tbody>
+
+  </table>
+</div>
