@@ -378,7 +378,7 @@ def addtasksubmit():
         tasks.insert(task)
 
         #return redirect(url_for('tasks', comp_id=comp_id))
-        return redirect(url_for('/listTasks'))
+        return redirect(url_for('listTasks'))
 
 @app.route('/listTasks/', methods=['GET'])
 @admin_required

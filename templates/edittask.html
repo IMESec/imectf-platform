@@ -21,10 +21,10 @@
         <input name="file" type="file" class="form-control" />
 
         <label>{{ lang.addtask.hint_label }}</label>
-        <input name="hint" type="text" class="form-control" />
+        <input name="hint" type="text" class="form-control" value="{{ task.hint }}"/>
 
         <label>{{ lang.addtask.flag_label }}</label>
-        <input name="flag" type="text" class="form-control" />
+        <input name="flag" type="text" class="form-control" value="{{ task.flag }}"/>
 
         <input type="submit" class="form-control" />
       </form>
