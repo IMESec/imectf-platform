@@ -1,0 +1,18 @@
+<div class="landing-page container">
+	<div class="main">
+		<h1>Criar Time</h1>
+		<form method="POST" enctype="multipart/form-data">
+			<input type="hidden" name="check" value="newTeam" />
+			<label>Nome do Time</label>
+        	<input name="name" type="text" required="required" class="form-control" />
+        	<input type="submit" class="form-control" value="Criar"/>
+		</form>
+		<h1>Entrar em time</h1>
+		<form method="POST" enctype="multipart/form-data">
+			<input type="hidden" name="check" value="enterTeam" />
+			<label>Hash do Time</label>
+        	<input name="hash" type="text" required="required" class="form-control" />
+        	<input type="submit" class="form-control" value="Entrar"/>
+		</form>
+	</div>
+</div>

@@ -196,10 +196,10 @@ def register_submit():
 
     return redirect('/competitions')
 
-@app.route('/tasks/<comp_id>/')
+"""@app.route('/competition/<comp_id>/')
 @login_required
 def tasks(comp_id):
-    """Displays all the tasks of a competition in a grid"""
+    #Displays all the tasks of a competition in a grid
 
     #check_running(comp_id)
     user = get_user()
@@ -210,7 +210,7 @@ def tasks(comp_id):
 
     flags = db['flags']
 
-    tasks = db.query("SELECT * FROM tasks WHERE competition = :comp_id ORDER BY category, score", comp_id=comp_id);
+    tasks = db.query("SELECT * FROM tasks");
 
     tasks = list(tasks)
 
@@ -269,9 +269,79 @@ def tasks(comp_id):
 
 
     # Render template
-    render = render_template('frame.html', lang=lang, page='tasks.html',
+    render = render_template('frame.html', lang=lang, page='competition.html',
         user=user, categories=categories, grid=grid, comp_id=comp_id)
+    return make_response(render)"""
+
+@app.route('/competition/<comp_id>/')
+@login_required
+def competition(comp_id):
+    user = get_user()
+    
+    if not user['isAdmin']:
+        player_team = db.query("SELECT * FROM teams t, team_player tp WHERE tp.id_team = t.id AND t.comp_id = :comp_id AND tp.id_user = :user_id", comp_id=comp_id, user_id=session['user_id'])
+        player_team = list(player_team)
+        # If the normal player doesn't have a team to that competition
+        if len(player_team) == 0:
+            return redirect(url_for('teamsign', comp_id=comp_id))
+
+
+    # Render template
+    render = render_template('frame.html', lang=lang, page='competition.html',
+        user=user, comp_id=comp_id)
     return make_response(render)
+
+@app.route('/teamsign/<comp_id>')
+def teamsign(comp_id):
+    user = get_user()
+
+    render = render_template('frame.html', lang=lang, page='teamsign.html',
+        user=user, comp_id=comp_id)
+    return make_response(render)
+
+@app.route('/teamsign/<comp_id>', methods=['POST'])
+def teamsignsubmit(comp_id):
+    if bleach.clean(request.form['check'], tags=[]) == 'newTeam':
+        try:
+            name = bleach.clean(request.form['name'], tags=[])
+        except KeyError:
+            return redirect('/error/form')
+        else:
+            teams = db['teams']
+            hash_team = hashlib.md5(name + "competicao" + str(comp_id)).hexdigest()
+            team = dict(
+                name=name,
+                hash=hash_team,
+                comp_id=comp_id
+            )
+            teams.insert(team)
+
+            id_team = teams.find_one(hash=hash_team)['id']
+            team_player = db['team_player']
+            team_player.insert(dict(id_team=id_team, id_user=session['user_id']))
+    
+    elif bleach.clean(request.form['check'], tags=[]) == 'enterTeam':
+        try:
+            hash_team = bleach.clean(request.form['hash'], tags=[])
+        except KeyError:
+            return redirect('/error/form')
+        else:
+            team = db.query("SELECT * FROM teams WHERE hash = :hash_team AND comp_id = :comp_id", hash_team=hash_team, comp_id=comp_id)
+            team = list(team)
+
+            if len(team) == 0:
+                return redirect('/error/wrong_hash')
+            else:
+                team=team[0]
+                team_players = db.query("SELECT * FROM team_player WHERE id_team = :id_team", id_team=team['id'])
+                team_players = list(team_players)
+                if len(team_players) == 3:
+                    return redirect('/error/too_many_members')
+                else:
+                    team_playersDB = db['team_player']
+                    team_playersDB.insert(dict(id_team=team['id'], id_user= session['user_id']))
+
+    return redirect(url_for('competition', comp_id=comp_id))
 
 @app.route('/addcat/', methods=['GET'])
 @admin_required
@@ -307,8 +377,9 @@ def addcompetition():
 @admin_required
 def addcompetitionsubmit():
     try:
+        name = bleach.clean(request.form['name'], tags=descAllowedTags)
         desc = bleach.clean(request.form['desc'], tags=descAllowedTags)
-        date_start  = bleach.clean(request.form['date_start'])
+        #date_start = bleach.clean(request.form['date_start'])
     except KeyError:
         return redirect('/error/form')
 
@@ -316,8 +387,9 @@ def addcompetitionsubmit():
 
         competitions = db['competitions']
         competition = dict(
-            desc=desc,
-            date_start=date_start
+            name=name,
+            desc=desc
+            #date_start=date_start
     	)
 
         competitions.insert(competition)
@@ -582,7 +654,7 @@ def deleteCompetitions(postID):
     user = get_user()
     if user["isAdmin"]:
         competitions = db.query('''delete from competitions where id = ''' + postID)
-        flash('Lista deletada com sucesso')
+        #flash('Lista deletada com sucesso')
     
     return redirect('/competitions')
 
