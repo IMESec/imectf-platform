@@ -130,71 +130,72 @@ def _set_sqlite_pragma(dbapi_connection, connection_record):
         cursor.execute("PRAGMA foreign_keys=ON;")
         cursor.close()
 
-@app.route('/login', methods = ['POST'])
-def login():
-    """Attempts to log the user in"""
+@app.route('/login', methods = ['GET'])
+def login_page():
+    """Displays the login page"""
 
-    from werkzeug.security import check_password_hash
-
-    username = request.form['user']
-    password = request.form['password']
-
-    user = db['users'].find_one(username=username)
-    if user is None:
-        return redirect('/error/invalid_credentials')
-
-    if check_password_hash(user['password'], password):
-        session_login(username)
-        return redirect('/competitions')
-
-    return redirect('/error/invalid_credentials')
-
-@app.route('/register')
-def register():
-    """Displays the register form"""
-
-    userCount = db['users'].count()
+    user = get_user()
+    if user is not None:
+        return redirect('/')
 
     # Render template
     render = render_template('frame.html', lang=lang,
-        page='register.html', login=False)
+        page='login.html', user=user)
     return make_response(render)
 
-@app.route('/register/submit', methods = ['POST'])
-def register_submit():
-    """Attempts to register a new user"""
+@app.route('/login', methods = ['POST'])
+def login():
+    from werkzeug.security import check_password_hash
 
-    from werkzeug.security import generate_password_hash
-
-    username = request.form['user']
-    #email = request.form['email']
+    username = request.form['username']
     password = request.form['password']
 
-    if not username:
-        return redirect('/error/empty_user')
+    if 'login-button' in request.form:
+        """Attempts to log the user in"""
 
-    user_found = db['users'].find_one(username=username)
-    if user_found:
-        return redirect('/error/already_registered')
+        user = db['users'].find_one(username=username)
+        if user is None:
+            return redirect('/error/invalid_credentials')
 
-    isAdmin = False
-    isHidden = False
-    userCount = db['users'].count()
+        if check_password_hash(user['password'], password):
+            session_login(username)
+            return redirect('/competitions')
 
-    #if no users, make first user admin
-    if userCount == 0:
-        isAdmin = True
-        isHidden = True
+    if 'register-button' in request.form:
+        """Attempts to register a new user"""
 
-    new_user = dict(username=username, #email=email,
-        password=generate_password_hash(password), isAdmin=isAdmin,
-        isHidden=isHidden)
-    db['users'].insert(new_user)
+        from werkzeug.security import generate_password_hash
 
-    # Set up the user id for this session
-    session_login(username)
+        username = request.form['username']
+        password = request.form['password']
 
-    return redirect('/competitions')
+        if not username:
+            return redirect('/error/empty_user')
+
+        user_found = db['users'].find_one(username=username)
+        if user_found:
+            return redirect('/error/already_registered')
+
+        isAdmin = False
+        isHidden = False
+        userCount = db['users'].count()
+
+        #if no users, make first user admin
+        if userCount == 0:
+            isAdmin = True
+            isHidden = True
+
+        new_user = dict(username=username,
+            password=generate_password_hash(password), isAdmin=isAdmin,
+            isHidden=isHidden)
+        db['users'].insert(new_user)
+
+        # Set up the user id for this session
+        session_login(username)
+
+        return redirect('/competitions')
+
+    return redirect('/error/invalid_credentials')
 
 """@app.route('/competition/<comp_id>/')
 @login_required
@@ -351,7 +352,7 @@ def teamsignsubmit(comp_id):
             id_team = teams.find_one(hash=hash_team)['id']
             team_player = db['team_player']
             team_player.insert(dict(id_team=id_team, id_user=session['user_id']))
-    
+
     elif bleach.clean(request.form['check'], tags=[]) == 'enterTeam':
         try:
             hash_team = bleach.clean(request.form['hash'], tags=[])

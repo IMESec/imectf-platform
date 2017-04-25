@@ -1,88 +1,17 @@
 {
-  "english": {
-    "frame": {
-      "title": "CTFIME 0x0",
-      "toggle": "Toggle navigation",
-      "login": "Sign in",
-      "register": "Register",
-      "logged_in": "Logged in as",
-      "logout": "log out"
-    },
-    "main": {
-      "title": "IMESEC",
-      "text": "Primeiro Capture The Flag realizado pela IME++/IMESEC"
-    },
-    "about": {
-      "title": "About",
-      "news": "News",
-      "news_text": "Aproveitem as 48h para ver todas as questões, procurarem na internet, conversar com os outros da equipe.<br>O objetivo desse Capture The Flag é incentivar que todos pesquisem como as coisas funcionam, então aproveitem  para aprender!",
-      "rules": "Rules",
-      "rules_text": "- Equipes de até 3 pessoas utilizando apenas uma conta<br>- Toda consulta é válida e recomendada<br>- As flags devem ser submetidas com o formato: CTFIME{FLAG}"
-    },
-    "tasks": {
-      "title": "Tasks"
-    },
-    "task": {
-      "description": "Description",
-      "attachment": "Attachment",
-      "submit": "Submit",
-      "success": "Correct flag!",
-      "failure": "Incorrect flag",
-      "points_format": "%d points",
-      "solution_format": "solved by %d",
-      "no_description": "(none)",
-      "placeholder": "CTFIME{insert_flag}",
-      "hint": "Hint",
-      "no_hint": "(none)",
-      "show_hint": "Show"
-    },
-    "addcat" : {
-      "title": "Add a Category",
-      "name_label": "Category Name: "
-    },
-    "addtask" : {
-      "add_title": "Add a Task",
-      "edit_title": "Edit a Task",
-      "delete_title": "Delete task",
-      "delete_desc": "Are you sure you want to delete this task?",
-      "cat_label": "Category: ",
-      "name_label": "Task Name: ",
-      "description_label": "Description: ",
-      "hint_label": "Hint: ",
-      "flag_label": "Flag: ",
-      "score_label": "Score: "
-    },
-    "scoreboard": {
-      "title": "Scoreboard",
-      "player": "Player",
-      "score": "Score"
-    },
-    "chat":{
-      "title": "Chat"
-    },
-    "error": {
-      "title": "Error",
-      "unknown": "Unknown error",
-      "login_required": "You need to be logged in to see this page",
-      "admin_required": "You need to be an admin to see this page",
-      "invalid_credentials": "Invalid username or password",
-      "already_registered": "This user is already registered",
-      "empty_user": "Empty username is not allowed",
-      "task_not_found": "TBD",
-      "form": "Invalid form input",
-      "not_started": "Competition hasn't started yet",
-      "finished": "Competition has already ended"
-    }
-  },
-
   "portugues": {
     "frame": {
-      "title": "CTFIME",
-      "toggle": "Mudar navegação;",
-      "login": "Entrar",
-      "register": "Registrar",
-      "logged_in": "Logado como",
-      "logout": "sair"
+      "title": "IMECTF",
+      "login": "Login",
+      "logged_as": "logged as",
+      "logout": "Logout",
+      "view_on": "View on"
+    },
+    "login": {
+      "login": "Login",
+      "login_placeholder": "us3rn4m3",
+      "pass_placeholder": "p455w0rd",
+      "register": "Registrar"
     },
     "main": {
       "title": "IMESec - Banco de Questões",
