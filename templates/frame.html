@@ -9,6 +9,17 @@
     <script src="{{ url_for('static', filename='js/jquery-3.2.1.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/semantic.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/tablesort.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/general.js') }}"></script>
+    <script>
+      var static = "{{ url_for('static', filename='files/') }}";
+      var categories = {};
+      {% for c in categories %} categories[{{ c.id }}] = "{{ c.name }}"; {% endfor %}
+      function resetForm(form) {
+        form.find('input:text').val('')
+        form.find('.category-text').text('{{ lang.tasks.category_placeholder }}')
+        form.find('.category-text').addClass('default')
+      }
+    </script>
   </head>
   <body>
     <!-- Navigation Menu -->

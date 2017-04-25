@@ -11,7 +11,7 @@
         <th class="two wide center aligned"><i class="settings icon"></i></th>
       </tr>
     </thead>
-    <tbody id="task-table-body">
+    <tbody id="tasks-table-body">
       {% for task in tasks %}
       <tr data-id="{{ task.id }}">
         <td class="three wide">{{ task.name }}</td>
@@ -151,7 +151,7 @@
   </div>
 </form>
 
-<form id="task-new-form" class="ui modal task-new-modal" action="/tasks/add" enctype="multipart/form-data">
+<form id="task-new-form" class="ui modal task-new-modal" action="/tasks/add">
   <div class="header">{{ lang.tasks.new }}</div>
   <div class="content">
     <div class="ui form">
@@ -214,48 +214,6 @@
 
 <script>
 $(function() {
-  // Configure ajax
-  $.ajaxSetup({
-    method: 'POST',
-    cache: false,
-    contentType: false,
-    processData: false,
-  });
-
-  var categories = {};
-  {% for c in categories %}
-  categories[{{ c.id }}] = "{{ c.name }}";
-  {% endfor %}
-
-  var static = "{{ url_for('static', filename='files/') }}";
-
-  function resetForm(form) {
-    form.find('input:text').val('')
-    form.find('.category-text').text('{{ lang.tasks.category_placeholder }}')
-    form.find('.category-text').addClass('default')
-  }
-
-  function fetchTaskToForm(task_id, form) {
-    $.ajax({
-      url: '/task/' + task_id,
-      success: function(res) {
-        $.each(res, function(name, v) {
-          var elem = form.find('[name=task-'+name+']');
-          if (elem.length > 0 && elem.attr('type') != "file")
-            elem.val(v);
-        });
-
-        form.find('.task-category-dropdown').dropdown('set selected', res['category']);
-      },
-      error: function() {
-        console.log("error");
-      }
-    });
-  }
-
-  $('.tasks-table').tablesort()
-  $('.ui.dropdown').dropdown()
-
   $(document).on('click', '.task-edit', function() {
     $('.task-loading').addClass('active');
     fetchTaskToForm($(this).closest('tr').data('id'), $('#task-edit-form'));
@@ -283,17 +241,15 @@ $(function() {
 
   $('#task-new-form').submit(function(event) {
     event.preventDefault();
+
     var data = new FormData($('#task-new-form')[0]);
+    var url = $(this).attr('action');
 
-    $.ajax({
-      url: $(this).attr('action'),
-      data: data,
-      success: function(res) {
-        if (res['status'] === 'OK') {
-          var task = res['task'];
+    ajaxQuery(url, data, function(res) {
+      var task = res['task'];
 
-          var newrow =
-          '<tr data-id="' + task['id'] + '"> \
+      var newrow =
+        '<tr data-id="' + task['id'] + '"> \
             <td class="three wide">' + task['name'] + '</td> \
             <td class="three wide">' + categories[task['category']] + '</td> \
             <td class="eight wide">' + task['desc'] + '</td> \
@@ -303,10 +259,7 @@ $(function() {
             </td> \
           </tr>';
 
-          $('#task-table-body').append(newrow);
-        } else {
-        }
-      }
+      $('#tasks-table-body').append(newrow);
     });
 
     $('.task-new-modal').modal('hide');
@@ -317,6 +270,8 @@ $(function() {
   $('#task-edit-form').submit(function(event) {
     event.preventDefault();
     var data = new FormData($('#task-edit-form')[0]);
+    var url = $(this).attr('action');
+    //ajaxQuery(url, data, function() {
 
     $.ajax({
       url: $(this).attr('action'),
@@ -336,7 +291,7 @@ $(function() {
             </td> \
           </tr>';
 
-          $('#task-table-body').find('tr[data-id='+task['id']+']').replaceWith(newrow);
+          $('#tasks-table-body').find('tr[data-id='+task['id']+']').replaceWith(newrow);
         } else {
           console.log(res['message']);
         }
@@ -360,7 +315,7 @@ $(function() {
       data: data,
       success: function(res) {
         if (res['status'] === 'OK') {
-          $('#task-table-body').find('tr[data-id='+id+']').remove();
+          $('#tasks-table-body').find('tr[data-id='+id+']').remove();
         } else {
           console.log(res['message'])
         }
@@ -372,31 +327,4 @@ $(function() {
     return false;
   });
 });
-</script>
-
-<script>
-
-$(function() {
-  $(document).on('change', '.btn-file :file', function() {
-    var input = $(this);
-
-    if (navigator.appVersion.indexOf("MSIE") != -1) { // IE
-      var label = input.val();
-
-      input.trigger('fileselect', [ 1, label, 0 ]);
-    } else {
-      var label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
-      var numFiles = input.get(0).files ? input.get(0).files.length : 1;
-      var size = input.get(0).files[0].size;
-
-      input.trigger('fileselect', [ numFiles, label, size ]);
-    }
-  });
-
-  $('.btn-file :file').on('fileselect', function(event, numFiles, label, size) {
-    $(this).attr('name', 'task-file'); // allow upload.
-    $(this).parent().next('._attachmentName').val(label);
-  });
-});
-
 </script>

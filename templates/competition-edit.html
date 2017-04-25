@@ -1,26 +1,26 @@
 <div class="ui container main">
-  <h2 class="ui inverted header">competition.name</h2>
+  <h2 class="ui inverted header">{{ competition.name }}</h2>
 
   <table class="ui single line selectable inverted fixed sortable unstackable table tasks-table">
     <thead>
       <tr>
-        <th class="one wide center aligned">Score</i></th>
-        <th class="three wide">Name</th>
-        <th class="three wide">Category</th>
-        <th class="eight wide">Description</th>
+        <th class="one wide center aligned">{{ lang.tasks.score }}</i></th>
+        <th class="three wide">{{ lang.tasks.name }}</th>
+        <th class="three wide">{{ lang.tasks.category }}</th>
+        <th class="eight wide">{{ lang.tasks.desc }}</th>
         <th class="two wide center aligned"><i class="settings icon"></i></th>
       </tr>
     </thead>
     <tbody>
-      {% for task in tasks %}
-      <tr>
-        <td class="one wide">0</td>
-        <td class="three wide">Task 1</td>
-        <td class="three wide">Binary Exploitation</td>
-        <td class="eight wide">You have to solve this problem</td>
+      {% for task in tasks_comp %}
+      <tr data-id="{{ task.id }}">
+        <td class="one wide">{{ task.score }}</td>
+        <td class="three wide">{{ task.name }}</td>
+        <td class="three wide">{{ categories[task.category-1].name }}</td>
+        <td class="eight wide">{{ task.desc }}</td>
         <td class="two wide center aligned">
-          <a href="#"><i class="large edit icon task-update"></i></a>
-          <a href="#"><i class="large minus square icon task-remove"></i></a>
+          <a href="#" class="task-update"><i class="large edit icon"></i></a>
+          <a href="#" class="task-remove"><i class="large minus square icon"></i></a>
         </td>
       </tr>
       {% endfor %}
@@ -32,70 +32,89 @@
   <table class="ui single line selectable inverted fixed sortable unstackable table tasks-table">
     <thead>
       <tr>
-        <th class="three wide">Name</th>
-        <th class="three wide">Category</th>
-        <th class="eight wide">Description</th>
+        <th class="three wide">{{ lang.tasks.name }}</th>
+        <th class="three wide">{{ lang.tasks.category }}</th>
+        <th class="eight wide">{{ lang.tasks.desc }}</th>
         <th class="two wide center aligned"><i class="settings icon"></i></th>
       </tr>
     </thead>
-    <tbody>
-      <tr>
-        <td class="three wide">Task 1</td>
-        <td class="three wide">Binary Exploitation</td>
-        <td class="eight wide">You have to solve this problem</td>
+    <tbody id="tasks-table-body">
+      {% for task in tasks %}
+      <tr data-id="{{ task.id }}">
+        <td class="three wide">{{ task.name }}</td>
+        <td class="three wide">{{ categories[task.category-1].name }}</td>
+        <td class="eight wide">{{ task.desc }}</td>
         <td class="two wide center aligned">
-          <a href="#"><i class="large plus square icon task-add"></i></a>
+          <a href="#" class="task-add"><i class="large plus square icon"></i></a>
         </td>
       </tr>
+      {% endfor %}
     </tbody>
     <tfoot class="full-width">
       <tr>
         <th colspan="4">
-          <button class="ui right floated small primary right labeled icon button" onclick="$('.task-new-modal').modal('show')">
-            <i class="plus icon"></i>Add Task
+          <button class="ui right floated small primary right labeled icon button task-new">
+            <i class="plus icon"></i>{{ lang.tasks.add }}
           </button>
         </th>
+      </tr>
     </tfoot>
   </table>
 </div>
 
-<div class="ui modal task-remove-modal">
-  <div class="header">Remove task from Competition</div>
+<form id="task-remove-form" class="ui modal task-remove-modal" action="/competition/{{ competition.id }}/remove-task">
+  <div class="header">{{ lang.competition.remove }}</div>
 
   <div class="content">
     <div class="ui form">
+      <input type="hidden" name="task-id">
       <div class="field">
-        <label>Name</label>
+        <label>{{ lang.tasks.name }}</label>
         <input type="text" name="task-name" value="Task name" disabled>
       </div>
       <div class="field">
-        <label>Category</label>
-        <input type="text" name="task-category" value="Task category" disabled>
+        <label>{{ lang.tasks.category }}</label>
+        <div class="ui fluid search selection dropdown disabled task-category-dropdown">
+          <input type="hidden" name="task-category">
+          <i class="dropdown icon"></i>
+          <div class="default text">{{ lang.tasks.category_placeholder }}</div>
+          <div class="menu">
+            {% for category in categories %}
+            <div class="item" data-value="{{ category.id }}">{{ category.name }}</div>
+            {% endfor %}
+          </div>
+        </div>
       </div>
       <div class="field">
-        <label>Description</label>
+        <label>{{ lang.tasks.desc }}</label>
         <textarea rows="3" disabled>Task description</textarea>
       </div>
 
       <div class="field">
-        <label>Hint</label>
+        <label>{{ lang.tasks.hint }}</label>
         <textarea rows="2" disabled>Task hint</textarea>
       </div>
 
       <div class="field">
-        <label>File</label>
+        <label>{{ lang.tasks.file }}</label>
+        <input type="text" name="task-file" value="Task file" disabled>
+      </div>
+
+      <div class="field">
+        <label>{{ lang.tasks.flag }}</label>
+        <input type="text" name="task-flag" value="Task flag" disabled>
       </div>
     </div>
   </div>
 
   <div class="actions">
-    <div class="ui black cancel button">Cancel</div>
+    <div class="ui black cancel button">{{ lang.competition.remove_cancel }}</div>
     <div class="ui negative right labeled icon button">
-      Remove from competition
+      {{ lang.competition.remove_accept }}
       <i class="trash icon"></i>
     </div>
   </div>
-</div>
+</form>
 
 <div class="ui modal task-update-modal">
   <div class="header">Update task on Competition</div>
@@ -179,57 +198,64 @@
   </div>
 </div>
 
-<form class="ui modal task-new-modal">
-  <div class="header">New Task</div>
+<form id="task-new-form" class="ui modal task-new-modal" action="/tasks/add">
+  <div class="header">{{ lang.tasks.new }}</div>
   <div class="content">
     <div class="ui form">
+
       <div class="field">
-        <label>Name</label>
-        <input type="text" name="task-name" placeholder="Insert Name">
+        <label>{{ lang.tasks.name }}</label>
+        <input type="text" name="task-name" placeholder="{{ lang.tasks.name_placeholder }}"required>
       </div>
       <div class="field">
-        <label>Category</label>
-        <div class="ui fluid search selection dropdown">
-          <input type="hidden" name="task-category">
+        <label>{{ lang.tasks.category }}</label>
+        <div class="ui fluid search selection dropdown task-category-dropdown">
+          <input type="hidden" name="task-category" required>
           <i class="dropdown icon"></i>
-          <div class="default text">Select Category</div>
+          <div class="default text category-text">{{ lang.tasks.title }}</div>
           <div class="menu">
-            <div class="item" data-value="0">Binary Exploitation</div>
-            <div class="item" data-value="1">Reverse Engineering</div>
+            {% for category in categories %}
+            <div class="item" data-value="{{ category.id }}">{{ category.name }}</div>
+            {% endfor %}
           </div>
         </div>
       </div>
       <div class="field">
-        <label>Description</label>
-        <textarea rows="3" placeholder="Insert Description"></textarea>
+        <label>{{ lang.tasks.desc }}</label>
+        <textarea rows="3" name="task-desc" placeholder="{{ lang.tasks.desc_placeholder }}"></textarea>
       </div>
 
       <div class="field">
-        <label>Hint</label>
-        <textarea rows="2" placeholder="Insert hint"></textarea>
+        <label>{{ lang.tasks.hint }}</label>
+        <textarea rows="2" name="task-hint" placeholder="{{ lang.tasks.hint_placeholder }}"></textarea>
       </div>
 
       <div class="field">
-        <label>File</label>
+        <label>{{ lang.tasks.file }}</label>
         <div class="ui left action input">
-          <label for="attachmentName" class="ui labeled icon button btn-file">
+          <label class="ui labeled icon button btn-file">
             <i class="attachment upload icon"></i>
-            Select file
-            <input type="file" id="attachmentName" name="attachmentName" style="display: none">
+            {{ lang.tasks.file_placeholder }}
+            <input type="file" name="task-file" style="display: none">
           </label>
-          <input type="text" id="_attachmentName" disabled>
+          <input type="text" class="_attachmentName" disabled>
         </div>
+      </div>
+
+      <div class="field">
+        <label>{{ lang.tasks.flag }}</label>
+        <input type="text" name="task-flag" placeholder="{{ lang.tasks.flag_placeholder }}" required>
       </div>
 
     </div>
   </div>
 
   <div class="actions">
-    <div class="ui black cancel button">Discard</div>
-    <div class="ui positive right labeled icon ok button">
-      Create
+    <div class="ui black cancel button">{{ lang.tasks.new_cancel }}</div>
+    <button type="submit" class="ui positive right labeled icon ok button">
+      {{ lang.tasks.new_accept }}
       <i class="checkmark icon"></i>
-    </div>
+    </button>
   </div>
 </form>
 
@@ -243,75 +269,72 @@
 </div>
 
 <script>
-$('.tasks-table').tablesort()
-$('.ui.dropdown').dropdown()
-$('.checkbox').checkbox('attach events', '.check.button', 'check');
+$(function() {
+  $('.task-new').on('click', function() {
+    resetForm($('.task-new-modal'));
+    $('.task-new-modal')
+      .modal({ onApprove: function() { return false; } })
+      .modal('show');
+  });
 
-$('.task-add').on('click', function() {
-  $('.task-loading').addClass('active');
+  $('.task-add').on('click', function() {
+    $('.task-loading').addClass('active');
 
-  //$(this).data("id");
-  // Fetch
+    //$(this).data("id");
+    // Fetch
 
-  $('.task-loading').removeClass('active');
+    $('.task-loading').removeClass('active');
 
-  $('.task-add-modal').modal('show');
+    $('.task-add-modal').modal('show');
+  });
+
+  $('.task-remove').on('click', function() {
+    $('.task-loading').addClass('active');
+
+    //$(this).data("id");
+    // Fetch
+
+    $('.task-loading').removeClass('active');
+
+    $('.task-remove-modal').modal('show');
+  });
+
+  $('.task-update').on('click', function() {
+    $('.task-loading').addClass('active');
+
+    //$(this).data("id");
+    // Fetch
+
+    $('.task-loading').removeClass('active');
+
+    $('.task-update-modal').modal('show');
+  });
+
+  $('#task-new-form').submit(function(event) {
+    event.preventDefault();
+
+    var data = new FormData($('#task-new-form')[0]);
+    var url = $(this).attr('action');
+
+    ajaxQuery(url, data, function(res) {
+      var task = res['task'];
+
+      var newrow =
+        '<tr data-id="' + task['id'] + '"> \
+            <td class="three wide">' + task['name'] + '</td> \
+            <td class="three wide">' + categories[task['category']] + '</td> \
+            <td class="eight wide">' + task['desc'] + '</td> \
+            <td class="two wide center aligned"> \
+              <a href="#" class="task-add"><i class="large plus square icon"></i></a> \
+            </td> \
+          </tr>';
+
+      $('#tasks-table-body').append(newrow);
+    });
+
+    $('.task-new-modal').modal('hide');
+
+    return false;
+  });
 });
-
-$('.task-remove').on('click', function() {
-  $('.task-loading').addClass('active');
-
-  //$(this).data("id");
-  // Fetch
-
-  $('.task-loading').removeClass('active');
-
-  $('.task-remove-modal').modal('show');
-});
-
-$('.task-update').on('click', function() {
-  $('.task-loading').addClass('active');
-
-  //$(this).data("id");
-  // Fetch
-
-  $('.task-loading').removeClass('active');
-
-  $('.task-update-modal').modal('show');
-});
-</script>
-
-<script>
-
-var MAX_SIZE = 30; // MB
-
-$(document).on('change', '.btn-file :file', function() {
-  var input = $(this);
-
-  if (navigator.appVersion.indexOf("MSIE") != -1) { // IE
-    var label = input.val();
-
-    input.trigger('fileselect', [ 1, label, 0 ]);
-  } else {
-    var label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
-    var numFiles = input.get(0).files ? input.get(0).files.length : 1;
-    var size = input.get(0).files[0].size;
-
-    input.trigger('fileselect', [ numFiles, label, size ]);
-  }
-});
-
-$('.btn-file :file').on('fileselect', function(event, numFiles, label, size) {
-  console.log("ok!");
-  $('#attachmentName').attr('name', 'attachmentName'); // allow upload.
-
-  if (size > 1024 * 1024 * MAX_SIZE ) {
-    alert('max size：<strong>' + MAX_SIZE + '</strong> MB.');
-
-    $('#attachmentName').removeAttr('name'); // cancel upload file.
-  } else {
-    $('#_attachmentName').val(label);
-  }
-});
-
 </script>

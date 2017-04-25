@@ -130,19 +130,6 @@ def _set_sqlite_pragma(dbapi_connection, connection_record):
         cursor.execute("PRAGMA foreign_keys=ON;")
         cursor.close()
 
-@app.route('/login', methods = ['GET'])
-def login_page():
-    """Displays the login page"""
-
-    user = get_user()
-    if user is not None:
-        return redirect('/')
-
-    # Render template
-    render = render_template('frame.html', lang=lang,
-        page='login.html', user=user)
-    return make_response(render)
-
 @app.route('/login', methods = ['POST'])
 def login():
     from werkzeug.security import check_password_hash
@@ -228,18 +215,17 @@ def competition(comp_id):
 @app.route('/competition/<comp_id>/edit', methods=['GET'])
 @admin_required
 def competition_edit(comp_id):
-    user = get_user()
+    competition = db['competitions'].find_one(id=comp_id)
+    categories = list(db['categories'].all())
 
-    tasks_comp = db.query("SELECT * FROM tasks t LEFT OUTER JOIN task_competition tc ON t.id = tc.task_id AND tc.comp_id = :comp_id", comp_id=comp_id)
+    tasks_comp = db.query("SELECT * FROM tasks t JOIN task_competition tc ON t.id = tc.task_id AND tc.comp_id = :comp_id", comp_id=comp_id)
     tasks_comp = list(tasks_comp)
 
-    tasks_db = db.query("SELECT * FROM tasks")
-    tasks_db = list(tasks_db)
+    tasks = db.query("SELECT * FROM tasks t LEFT OUTER JOIN task_competition tc ON t.id = tc.task_id AND tc.comp_id != :comp_id", comp_id=comp_id)
+    tasks = list(tasks)
 
-    #tasks = [x for x in tasks_db if not [y for y in tasks_comp and y['id'] == x['id']]]
-    #print tasks_db
-
-    render = render_template('frame.html', lang=lang, tasks_comp=tasks_comp, page='competition-edit.html')
+    render = render_template('frame.html', lang=lang, page='competition-edit.html',
+                             tasks_comp=tasks_comp, tasks=tasks, competition=competition, categories=categories)
     return make_response(render)
 
 @app.route('/competition/<comp_id>/edit', methods=['POST'])
@@ -259,6 +245,24 @@ def competition_edit_post(comp_id):
             task = task[0]
             result = {'success': True, 'id':task['id'], 'name':task['name'], 'desc':task['desc'], 'hint':task['hint'], 'category':str(task['category']), 'flag':task['flag'], 'file':task['file']}
         return jsonify(result)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 @app.route('/teamsign/<comp_id>')
 def teamsign(comp_id):
@@ -374,8 +378,7 @@ def addcompetitionsubmit():
 @app.route('/tasks/', methods=['GET'])
 @admin_required
 def tasks():
-    categories = db.query('SELECT * FROM categories')
-    categories = list(categories)
+    categories = list(db['categories'].all())
 
     tasks = db.query('SELECT * FROM tasks')
     tasks = list(tasks)
@@ -493,44 +496,6 @@ def task_get(tid):
 
 
 
-
-@app.route('/task/<tid>/edit', methods=['GET'])
-@admin_required
-def edittask(tid):
-    user = get_user()
-
-    task = db["tasks"].find_one(id=tid);
-    categories = db["categories"];
-
-    render = render_template('frame.html', lang=lang, user=user,
-            categories=categories,
-            page='edittask.html', task=task)
-    return make_response(render)
-
-
-
-@app.route('/tasks/<comp_id>/<tid>/')
-@login_required
-def task(comp_id, tid):
-    """Displays a task of a given category with a given category and score"""
-
-    user = get_user()
-
-    task = get_task(comp_id, tid)
-    if not task:
-        return redirect('/error/task_not_found')
-
-    flags = get_flags()
-    task_done = task['id'] in flags
-
-    solutions = db['flags'].find(task_id=task['id'])
-    solutions = len(list(solutions))
-
-    # Render template
-    render = render_template('frame.html', lang=lang, page='task.html',
-        task_done=task_done, login=login, solutions=solutions,
-        user=user, category=task["cat_name"], comp_id=comp_id, task=task, score=task["score"])
-    return make_response(render)
 
 @app.route('/submit/<comp_id>/<tid>/<flag>')
 @login_required

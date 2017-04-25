@@ -23,6 +23,7 @@
     "tasks": {
       "title": "Tasks",
       "name": "Name",
+      "score": "Score",
       "category": "Category",
       "desc": "Description",
       "hint": "Hint",
@@ -48,6 +49,11 @@
       "new": "New Task",
       "new_cancel": "Discard",
       "new_accept": "Create"
+    },
+    "competition": {
+      "remove": "Remove task from competition",
+      "remove_cancel": "Cancel",
+      "remove_accept": "Remove from competition"
     },
 
 
