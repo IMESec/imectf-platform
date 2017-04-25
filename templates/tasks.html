@@ -300,6 +300,7 @@ $(function() {
     var id = $(this).find('[name=task-id]').val();
     var data = new FormData();
     data.append('task-id', id);
+
     var url = $(this).attr('action');
 
     ajaxQuery(url, data, function(res) {

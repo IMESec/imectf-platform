@@ -221,34 +221,34 @@ def competition_edit(comp_id):
     tasks_comp = db.query("SELECT * FROM tasks t JOIN task_competition tc ON t.id = tc.task_id AND tc.comp_id = :comp_id", comp_id=comp_id)
     tasks_comp = list(tasks_comp)
 
-    tasks = db.query("SELECT * FROM tasks t LEFT OUTER JOIN task_competition tc ON t.id = tc.task_id AND tc.comp_id != :comp_id", comp_id=comp_id)
+    tasks = db.query("SELECT * FROM tasks WHERE id NOT IN (SELECT id FROM tasks t JOIN task_competition tc ON t.id = tc.task_id AND tc.comp_id = :comp_id)", comp_id=comp_id)
     tasks = list(tasks)
 
     render = render_template('frame.html', lang=lang, page='competition-edit.html',
                              tasks_comp=tasks_comp, tasks=tasks, competition=competition, categories=categories)
     return make_response(render)
 
-@app.route('/competition/<comp_id>/edit', methods=['POST'])
+@app.route('/competition/<comp_id>/addtask', methods=['POST'])
 @admin_required
 def competition_edit_post(comp_id):
     try:
-        type_action = bleach.clean(request.form['type'], tags=[])
-        task_id = bleach.clean(request.form['id'], tags=[])
+        comp_id = int(comp_id)
+        task_id = int(request.form['task-id']);
+        score = int(request.form['task-score']);
     except KeyError:
-        return redirect('/error/form')
+        return jsonify({"status": "ERROR", "message": "Internal error!"});
     else:
-        task = db.query("SELECT * FROM tasks t LEFT OUTER JOIN task_competition tc ON t.id = tc.task_id AND tc.comp_id = :comp_id WHERE t.id = :task_id", task_id=task_id, comp_id=comp_id)
-        task = list(task)
-        if len(task) == 0:
-            result = {'success':False}
-        else:
-            task = task[0]
-            result = {'success': True, 'id':task['id'], 'name':task['name'], 'desc':task['desc'], 'hint':task['hint'], 'category':str(task['category']), 'flag':task['flag'], 'file':task['file']}
-        return jsonify(result)
+        if not db['tasks'].find_one(id=task_id) or not db['competitions'].find_one(id=comp_id):
+            return jsonify({"status": "ERROR", "message": "Invalid task or competition!"});
 
+        task_competition = db['task_competition']
+        entry = dict(task_id=task_id, comp_id=comp_id, score=score)
 
+        task_competition.insert(entry)
 
-
+        task = list(db.query("SELECT * FROM tasks t JOIN task_competition tc ON t.id = :task_id AND tc.task_id = :task_id AND tc.comp_id = :comp_id LIMIT 1",
+                        task_id = task_id, comp_id = comp_id))
+        return jsonify({"status": "OK", "task" : task[0]})
 
 
 
@@ -404,7 +404,6 @@ def task_add():
         return jsonify({'status': 'ERROR', 'message': 'Form incorrect filled'})
     else:
         tasks = db['tasks']
-        #task = dict(name=name,desc=desc,competition=competition,category=category,score=score,hint=hint,flag=flag)
         task = dict(
                 name=name,
                 desc=desc,

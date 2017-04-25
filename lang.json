@@ -53,7 +53,10 @@
     "competition": {
       "remove": "Remove task from competition",
       "remove_cancel": "Cancel",
-      "remove_accept": "Remove from competition"
+      "remove_accept": "Remove from Competition",
+      "add": "Add task to competition",
+      "add_cancel": "Cancel",
+      "add_accept": "Add to Competition"
     },
 
 
