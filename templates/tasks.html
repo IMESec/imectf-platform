@@ -94,6 +94,7 @@
   <div class="header">{{ lang.tasks.edit }}</div>
   <div class="content">
     <div class="ui form">
+      <input type="hidden" name="task-id">
       <div class="field">
         <label>{{ lang.tasks.name }}</label>
         <input type="text" name="task-name" placeholder="{{ lang.tasks.name_placeholder }}">
@@ -260,7 +261,9 @@ $(function() {
     fetchTaskToForm($(this).closest('tr').data('id'), $('#task-edit-form'));
     $('.task-loading').removeClass('active');
 
-    $('.task-edit-modal').modal('show');
+    $('.task-edit-modal')
+      .modal({ onApprove: function() { return false; } })
+      .modal('show');
   });
 
   $(document).on('click', '.task-delete', function() {
@@ -286,27 +289,61 @@ $(function() {
       url: $(this).attr('action'),
       data: data,
       success: function(res) {
-        var task = res['task'];
+        if (res['status'] === 'OK') {
+          var task = res['task'];
 
-        var newrow =
-        '<tr data-id="' + task['id'] + '"> \
-          <td class="three wide">' + task['name'] + '</td> \
-          <td class="three wide">' + categories[task['category']] + '</td> \
-          <td class="eight wide">' + task['desc'] + '</td> \
-          <td class="two wide center aligned"> \
-            <a href="#" class="task-edit"><i class="large edit icon"></i></a> \
-            <a href="#" class="task-delete"><i class="large trash icon"></i></a> \
-          </td> \
-        </tr>';
+          var newrow =
+          '<tr data-id="' + task['id'] + '"> \
+            <td class="three wide">' + task['name'] + '</td> \
+            <td class="three wide">' + categories[task['category']] + '</td> \
+            <td class="eight wide">' + task['desc'] + '</td> \
+            <td class="two wide center aligned"> \
+              <a href="#" class="task-edit"><i class="large edit icon"></i></a> \
+              <a href="#" class="task-delete"><i class="large trash icon"></i></a> \
+            </td> \
+          </tr>';
 
-        $('#task-table-body').append(newrow);
-      },
-      error: function() {
-        console.log("error")
+          $('#task-table-body').append(newrow);
+        } else {
+        }
       }
     });
 
     $('.task-new-modal').modal('hide');
+
+    return false;
+  });
+
+  $('#task-edit-form').submit(function(event) {
+    event.preventDefault();
+    var data = new FormData($('#task-edit-form')[0]);
+
+    $.ajax({
+      url: $(this).attr('action'),
+      data: data,
+      success: function(res) {
+        if (res['status'] === 'OK') {
+          var task = res['task'];
+
+          var newrow =
+          '<tr data-id="' + task['id'] + '"> \
+            <td class="three wide">' + task['name'] + '</td> \
+            <td class="three wide">' + categories[task['category']] + '</td> \
+            <td class="eight wide">' + task['desc'] + '</td> \
+            <td class="two wide center aligned"> \
+              <a href="#" class="task-edit"><i class="large edit icon"></i></a> \
+              <a href="#" class="task-delete"><i class="large trash icon"></i></a> \
+            </td> \
+          </tr>';
+
+          $('#task-table-body').find('tr[data-id='+task['id']+']').replaceWith(newrow);
+        } else {
+          console.log(res['message']);
+        }
+      }
+    });
+
+    $('.task-edit-modal').modal('hide');
 
     return false;
   });
@@ -322,10 +359,11 @@ $(function() {
       url: $(this).attr('action'),
       data: data,
       success: function(res) {
-        $('#task-table-body').find('tr[data-id='+id+']').remove();
-      },
-      error: function() {
-        console.log("error")
+        if (res['status'] === 'OK') {
+          $('#task-table-body').find('tr[data-id='+id+']').remove();
+        } else {
+          console.log(res['message'])
+        }
       }
     });
 

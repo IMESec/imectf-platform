@@ -395,9 +395,10 @@ def task_add():
         category = int(request.form['task-category'])
         hint = request.form['task-hint']
         flag = request.form['task-flag']
+        if not flag:
+            return jsonify({'status': 'ERROR', 'message': 'No flag set'})
     except KeyError:
-        #return jsonify({"status": "ERROR"})
-        return redirect('/error/form')
+        return jsonify({'status': 'ERROR', 'message': 'Form incorrect filled'})
     else:
         tasks = db['tasks']
         #task = dict(name=name,desc=desc,competition=competition,category=category,score=score,hint=hint,flag=flag)
@@ -422,22 +423,67 @@ def task_add():
         tasks.insert(task)
 
         task = tasks.find_one(name = task["name"], flag = task["flag"])
+        return jsonify({"status": "OK", "task" : task})
 
+
+@app.route('/task/edit', methods=['POST'])
+@admin_required
+def task_edit():
+    print request.form
+    try:
+        tid = request.form['task-id']
+        name = bleach.clean(request.form['task-name'], tags=[])
+        desc = bleach.clean(request.form['task-desc'], tags=descAllowedTags)
+        category = int(request.form['task-category'])
+        hint = request.form['task-hint']
+        flag = request.form['task-flag']
+        if not flag:
+            return jsonify({'status': 'ERROR', 'message': 'No flag set'})
+    except KeyError:
+        return jsonify({'status': 'ERROR', 'message': 'Form incorrect filled'})
+    else:
+        tasks = db['tasks']
+        task = tasks.find_one(id=tid)
+        task['name'] = name
+        task['desc'] = desc
+        task['category'] = category
+        task['hint'] = hint
+        task['flag'] = flag
+
+        file = request.files['task-file']
+
+        if file:
+            filename, ext = os.path.splitext(file.filename)
+            #hash current time for file name
+            filename = hashlib.md5(str(datetime.datetime.utcnow())).hexdigest()
+            #if upload has extension, append to filename
+            if ext:
+                filename = filename + ext
+            file.save(os.path.join("static/files/", filename))
+
+            #remove old file
+            if task['file']:
+                os.remove(os.path.join("static/files/", task['file']))
+
+            task["file"] = filename
+
+        tasks.update(task, ['id'])
+        task = tasks.find_one(name = task["name"], flag = task["flag"])
         return jsonify({"status": "OK", "task" : task})
 
 
 @app.route('/task/delete', methods=['POST'])
 @admin_required
 def task_delete():
-    print request.form
+    # TODO: Delete file if any
     db['tasks'].delete(id=request.form['task-id'])
     return jsonify({"status": "OK"})
 
 
-@app.route('/task/<id>', methods=['GET', 'POST'])
+@app.route('/task/<tid>', methods=['GET', 'POST'])
 @admin_required
-def task_get(id):
-    task = db["tasks"].find_one(id=id)
+def task_get(tid):
+    task = db["tasks"].find_one(id=tid)
     return jsonify(task)
 
 
@@ -461,50 +507,6 @@ def edittask(tid):
             page='edittask.html', task=task)
     return make_response(render)
 
-@app.route('/task/<tid>/edit', methods=['POST'])
-@admin_required
-def edittasksubmit(tid):
-    try:
-        name = bleach.clean(request.form['name'], tags=[])
-        desc = bleach.clean(request.form['desc'], tags=descAllowedTags)
-        category = int(request.form['category'])
-        hint = request.form['hint']
-        flag = request.form['flag']
-    except KeyError:
-        return redirect('/error/form')
-
-    else:
-        tasks = db['tasks']
-        task = tasks.find_one(id=tid)
-        task['id']=tid
-        task['name']=name
-        task['desc']=desc
-        task['category']=category
-        task['hint']=hint
-
-        #only replace flag if value specified
-        if flag:
-            task['flag']=flag
-
-        file = request.files['file']
-
-        if file:
-            filename, ext = os.path.splitext(file.filename)
-            #hash current time for file name
-            filename = hashlib.md5(str(datetime.datetime.utcnow())).hexdigest()
-            #if upload has extension, append to filename
-            if ext:
-                filename = filename + ext
-            file.save(os.path.join("static/files/", filename))
-
-            #remove old file
-            if task['file']:
-                os.remove(os.path.join("static/files/", task['file']))
-
-            task["file"] = filename
-
-        tasks.update(task, ['id'])
-        return redirect(url_for('listTasks'))
 
 
 @app.route('/tasks/<comp_id>/<tid>/')
