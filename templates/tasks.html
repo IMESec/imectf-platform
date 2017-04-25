@@ -271,31 +271,22 @@ $(function() {
     event.preventDefault();
     var data = new FormData($('#task-edit-form')[0]);
     var url = $(this).attr('action');
-    //ajaxQuery(url, data, function() {
 
-    $.ajax({
-      url: $(this).attr('action'),
-      data: data,
-      success: function(res) {
-        if (res['status'] === 'OK') {
-          var task = res['task'];
+    ajaxQuery(url, data, function(res) {
+      var task = res['task'];
 
-          var newrow =
-          '<tr data-id="' + task['id'] + '"> \
-            <td class="three wide">' + task['name'] + '</td> \
-            <td class="three wide">' + categories[task['category']] + '</td> \
-            <td class="eight wide">' + task['desc'] + '</td> \
-            <td class="two wide center aligned"> \
-              <a href="#" class="task-edit"><i class="large edit icon"></i></a> \
-              <a href="#" class="task-delete"><i class="large trash icon"></i></a> \
-            </td> \
-          </tr>';
+      var newrow =
+      '<tr data-id="' + task['id'] + '"> \
+        <td class="three wide">' + task['name'] + '</td> \
+        <td class="three wide">' + categories[task['category']] + '</td> \
+        <td class="eight wide">' + task['desc'] + '</td> \
+        <td class="two wide center aligned"> \
+          <a href="#" class="task-edit"><i class="large edit icon"></i></a> \
+          <a href="#" class="task-delete"><i class="large trash icon"></i></a> \
+        </td> \
+      </tr>';
 
-          $('#tasks-table-body').find('tr[data-id='+task['id']+']').replaceWith(newrow);
-        } else {
-          console.log(res['message']);
-        }
-      }
+      $('#tasks-table-body').find('tr[data-id='+task['id']+']').replaceWith(newrow);
     });
 
     $('.task-edit-modal').modal('hide');
@@ -309,17 +300,10 @@ $(function() {
     var id = $(this).find('[name=task-id]').val();
     var data = new FormData();
     data.append('task-id', id);
+    var url = $(this).attr('action');
 
-    $.ajax({
-      url: $(this).attr('action'),
-      data: data,
-      success: function(res) {
-        if (res['status'] === 'OK') {
-          $('#tasks-table-body').find('tr[data-id='+id+']').remove();
-        } else {
-          console.log(res['message'])
-        }
-      }
+    ajaxQuery(url, data, function(res) {
+      $('#tasks-table-body').find('tr[data-id='+id+']').remove();
     });
 
     $('.task-new-modal').modal('hide');
