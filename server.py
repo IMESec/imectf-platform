@@ -366,9 +366,29 @@ def addcompetitionsubmit():
 
 
 
+
+
+
+
+
+@app.route('/tasks/', methods=['GET'])
+@admin_required
+def tasks():
+    categories = db.query('SELECT * FROM categories')
+    categories = list(categories)
+
+    tasks = db.query('SELECT * FROM tasks')
+    tasks = list(tasks)
+
+    user = get_user()
+    render = render_template('frame.html', lang=lang, user=user,
+            categories=categories, tasks=tasks, page='tasks.html')
+    return make_response(render)
+
+
 @app.route('/tasks/add', methods=['POST'])
 @admin_required
-def addtask():
+def task_add():
     try:
         name = bleach.clean(request.form['task-name'], tags=[])
         desc = bleach.clean(request.form['task-desc'], tags=descAllowedTags)
@@ -405,26 +425,28 @@ def addtask():
 
         return jsonify({"status": "OK", "task" : task})
 
-@app.route('/tasks/', methods=['GET'])
+
+@app.route('/task/delete', methods=['POST'])
 @admin_required
-def tasks():
-    categories = db.query('SELECT * FROM categories')
-    categories = list(categories)
+def task_delete():
+    print request.form
+    db['tasks'].delete(id=request.form['task-id'])
+    return jsonify({"status": "OK"})
 
-    tasks = db.query('SELECT * FROM tasks')
-    tasks = list(tasks)
 
-    user = get_user()
-    render = render_template('frame.html', lang=lang, user=user,
-            categories=categories, tasks=tasks, page='tasks.html')
-    return make_response(render)
-
-@app.route('/task/<tid>', methods=['GET', 'POST'])
+@app.route('/task/<id>', methods=['GET', 'POST'])
 @admin_required
-def task_get(tid):
-    print tid
-    task = db["tasks"].find_one(id=tid)
+def task_get(id):
+    task = db["tasks"].find_one(id=id)
     return jsonify(task)
+
+
+
+
+
+
+
+
 
 @app.route('/task/<tid>/edit', methods=['GET'])
 @admin_required
@@ -484,21 +506,6 @@ def edittasksubmit(tid):
         tasks.update(task, ['id'])
         return redirect(url_for('listTasks'))
 
-@app.route('/task/<tid>/delete', methods=['GET'])
-@admin_required
-def deletetask(tid):
-    tasks = db['tasks']
-    task = tasks.find_one(id=tid)
-
-    user = get_user()
-    render = render_template('frame.html', lang=lang, user=user, page='deletetask.html', task=task)
-    return make_response(render)
-
-@app.route('/task/<tid>/delete', methods=['POST'])
-@admin_required
-def deletetasksubmit(tid):
-    db['tasks'].delete(id=tid)
-    return redirect(url_for('listTasks'))
 
 @app.route('/tasks/<comp_id>/<tid>/')
 @login_required

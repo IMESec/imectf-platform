@@ -36,11 +36,12 @@
   </table>
 </div>
 
-<form id="task-delete-form" class="ui modal task-delete-modal" action="/task/">
+<form id="task-delete-form" class="ui modal task-delete-modal" action="/task/delete">
   <div class="header">{{ lang.tasks.delete }}</div>
 
   <div class="content">
     <div class="ui form">
+      <input type="hidden" name="task-id">
       <div class="field">
         <label>{{ lang.tasks.name }}</label>
         <input type="text" name="task-name" value="Task name" disabled>
@@ -89,7 +90,7 @@
   </div>
 </form>
 
-<form id="task-edit-form" class="ui modal task-edit-modal" action="/task/">
+<form id="task-edit-form" class="ui modal task-edit-modal" action="/task/edit">
   <div class="header">{{ lang.tasks.edit }}</div>
   <div class="content">
     <div class="ui form">
@@ -235,7 +236,7 @@ $(function() {
 
   function fetchTaskToForm(task_id, form) {
     $.ajax({
-      url: form.attr('action') + task_id,
+      url: '/task/' + task_id,
       success: function(res) {
         $.each(res, function(name, v) {
           var elem = form.find('[name=task-'+name+']');
@@ -254,7 +255,7 @@ $(function() {
   $('.tasks-table').tablesort()
   $('.ui.dropdown').dropdown()
 
-  $('.task-edit').on('click', function() {
+  $(document).on('click', '.task-edit', function() {
     $('.task-loading').addClass('active');
     fetchTaskToForm($(this).closest('tr').data('id'), $('#task-edit-form'));
     $('.task-loading').removeClass('active');
@@ -262,7 +263,7 @@ $(function() {
     $('.task-edit-modal').modal('show');
   });
 
-  $('.task-delete').on('click', function() {
+  $(document).on('click', '.task-delete', function() {
     $('.task-loading').addClass('active');
     fetchTaskToForm($(this).closest('tr').data('id'), $('#task-delete-form'));
     $('.task-loading').removeClass('active');
@@ -288,7 +289,7 @@ $(function() {
         var task = res['task'];
 
         var newrow =
-        '<tr data-id="' + task['id'] + '> \
+        '<tr data-id="' + task['id'] + '"> \
           <td class="three wide">' + task['name'] + '</td> \
           <td class="three wide">' + categories[task['category']] + '</td> \
           <td class="eight wide">' + task['desc'] + '</td> \
@@ -299,6 +300,29 @@ $(function() {
         </tr>';
 
         $('#task-table-body').append(newrow);
+      },
+      error: function() {
+        console.log("error")
+      }
+    });
+
+    $('.task-new-modal').modal('hide');
+
+    return false;
+  });
+
+  $('#task-delete-form').submit(function(event) {
+    event.preventDefault();
+
+    var id = $(this).find('[name=task-id]').val();
+    var data = new FormData();
+    data.append('task-id', id);
+
+    $.ajax({
+      url: $(this).attr('action'),
+      data: data,
+      success: function(res) {
+        $('#task-table-body').find('tr[data-id='+id+']').remove();
       },
       error: function() {
         console.log("error")
