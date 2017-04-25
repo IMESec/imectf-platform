@@ -277,19 +277,51 @@ def tasks(comp_id):
 @login_required
 def competition(comp_id):
     user = get_user()
-    
+    name_team = ""
     if not user['isAdmin']:
         player_team = db.query("SELECT * FROM teams t, team_player tp WHERE tp.id_team = t.id AND t.comp_id = :comp_id AND tp.id_user = :user_id", comp_id=comp_id, user_id=session['user_id'])
         player_team = list(player_team)
         # If the normal player doesn't have a team to that competition
         if len(player_team) == 0:
             return redirect(url_for('teamsign', comp_id=comp_id))
+        name_team = player_team[0]['name']
 
+    tasks = db.query("SELECT * FROM tasks t, task_competition tc WHERE t.id = tc.task_id AND tc.comp_id = :comp_id", comp_id=comp_id)
+    tasks = list(tasks)
 
     # Render template
     render = render_template('frame.html', lang=lang, page='competition.html',
-        user=user, comp_id=comp_id)
+        user=user, comp_id=comp_id, tasks=tasks, name_team=name_team)
     return make_response(render)
+
+@app.route('/editcomp/<comp_id>', methods=['GET'])
+@admin_required
+def editcomp(comp_id):
+    user = get_user()
+
+    tasks_comp = db.query("SELECT * FROM tasks t LEFT OUTER JOIN task_competition tc ON t.id = tc.task_id AND tc.comp_id = :comp_id", comp_id=comp_id)
+    tasks_comp = list(tasks_comp)
+
+    render = render_template('frame.html', lang=lang, tasks_comp=tasks_comp, page='editcomp.html')
+    return make_response(render)
+
+@app.route('/editcomp/<comp_id>', methods=['POST'])
+@admin_required
+def editcompsubmit(comp_id):
+    try:
+        type_action = bleach.clean(request.form['type'], tags=[])
+        task_id = bleach.clean(request.form['id'], tags=[])
+    except KeyError:
+        return redirect('/error/form')
+    else:
+        task = db.query("SELECT * FROM tasks t LEFT OUTER JOIN task_competition tc ON t.id = tc.task_id AND tc.comp_id = :comp_id WHERE t.id = :task_id", task_id=task_id, comp_id=comp_id)
+        task = list(task)
+        if len(task) == 0:
+            result = {'success':False}
+        else:
+            task = task[0]
+            result = {'success': True, 'id':task['id'], 'name':task['name'], 'desc':task['desc'], 'hint':task['hint'], 'category':str(task['category']), 'flag':task['flag'], 'file':task['file']}
+        return jsonify(result)
 
 @app.route('/teamsign/<comp_id>')
 def teamsign(comp_id):

@@ -1,0 +1,59 @@
+<div class="landing-page container">
+  <table class="table table-striped">
+    <thead>
+    	<tr>
+        <th>Tasks da Competição</th>
+    		<th>Nome</th>
+        <th>Categoria</th>
+    		<th>Descrição</th>
+    	</tr>
+    </thead>
+    <tbody>
+        {% for task in tasks_comp %}
+        {% if task.score != None %}
+        <tr>
+          <td>
+            <form method="POST" enctype="multipart/form-data">
+              <input name="type" type="hidden" value="edit">
+              <input name="id" type="hidden" value="{{ task.id }}">
+              <input type="submit" value="Edit" class="form-control"/>
+            </form>
+          </td>
+          <td>{{ task.name }}</td>
+          <td>{{ task.category }}</td>
+          <td>{{ task.desc }}</td>
+        </tr>
+        {% endif %}
+        {% endfor %}
+    </tbody>
+  </table>
+
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Tasks fora da Competição</th>
+        <th>Nome</th>
+        <th>Categoria</th>
+        <th>Descrição</th>
+      </tr>
+    </thead>
+    <tbody>
+        {% for task in tasks_comp %}
+        {% if task.score == None %}
+        <tr>
+          <td>
+            <form method="POST" enctype="multipart/form-data">
+              <input name="type" type="hidden" value="add">
+              <input name="id" type="hidden" value="{{ task.id }}">
+              <input type="submit" value="Add" class="form-control"/>
+            </form>
+          </td>
+          <td>{{ task.name }}</td>
+          <td>{{ task.category }}</td>
+          <td>{{ task.desc }}</td>
+        </tr>
+        {% endif %}
+        {% endfor %}
+    </tbody>
+  </table>
+</div>
