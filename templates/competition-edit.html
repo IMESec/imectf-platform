@@ -1,0 +1,317 @@
+<div class="ui container main">
+  <h2 class="ui inverted header">competition.name</h2>
+
+  <table class="ui single line selectable inverted fixed sortable unstackable table tasks-table">
+    <thead>
+      <tr>
+        <th class="one wide center aligned">Score</i></th>
+        <th class="three wide">Name</th>
+        <th class="three wide">Category</th>
+        <th class="eight wide">Description</th>
+        <th class="two wide center aligned"><i class="settings icon"></i></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for task in tasks %}
+      <tr>
+        <td class="one wide">0</td>
+        <td class="three wide">Task 1</td>
+        <td class="three wide">Binary Exploitation</td>
+        <td class="eight wide">You have to solve this problem</td>
+        <td class="two wide center aligned">
+          <a href="#"><i class="large edit icon task-update"></i></a>
+          <a href="#"><i class="large minus square icon task-remove"></i></a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <h3 class="ui center aligned inverted header">All tasks</h3>
+
+  <table class="ui single line selectable inverted fixed sortable unstackable table tasks-table">
+    <thead>
+      <tr>
+        <th class="three wide">Name</th>
+        <th class="three wide">Category</th>
+        <th class="eight wide">Description</th>
+        <th class="two wide center aligned"><i class="settings icon"></i></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="three wide">Task 1</td>
+        <td class="three wide">Binary Exploitation</td>
+        <td class="eight wide">You have to solve this problem</td>
+        <td class="two wide center aligned">
+          <a href="#"><i class="large plus square icon task-add"></i></a>
+        </td>
+      </tr>
+    </tbody>
+    <tfoot class="full-width">
+      <tr>
+        <th colspan="4">
+          <button class="ui right floated small primary right labeled icon button" onclick="$('.task-new-modal').modal('show')">
+            <i class="plus icon"></i>Add Task
+          </button>
+        </th>
+    </tfoot>
+  </table>
+</div>
+
+<div class="ui modal task-remove-modal">
+  <div class="header">Remove task from Competition</div>
+
+  <div class="content">
+    <div class="ui form">
+      <div class="field">
+        <label>Name</label>
+        <input type="text" name="task-name" value="Task name" disabled>
+      </div>
+      <div class="field">
+        <label>Category</label>
+        <input type="text" name="task-category" value="Task category" disabled>
+      </div>
+      <div class="field">
+        <label>Description</label>
+        <textarea rows="3" disabled>Task description</textarea>
+      </div>
+
+      <div class="field">
+        <label>Hint</label>
+        <textarea rows="2" disabled>Task hint</textarea>
+      </div>
+
+      <div class="field">
+        <label>File</label>
+      </div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <div class="ui black cancel button">Cancel</div>
+    <div class="ui negative right labeled icon button">
+      Remove from competition
+      <i class="trash icon"></i>
+    </div>
+  </div>
+</div>
+
+<div class="ui modal task-update-modal">
+  <div class="header">Update task on Competition</div>
+
+  <div class="content">
+    <div class="ui form">
+      <div class="field">
+        <label>Name</label>
+        <input type="text" name="task-name" value="Task name" disabled>
+      </div>
+      <div class="field">
+        <label>Category</label>
+        <input type="text" name="task-category" value="Task category" disabled>
+      </div>
+      <div class="field">
+        <label>Description</label>
+        <textarea rows="3" disabled>Task description</textarea>
+      </div>
+
+      <div class="field">
+        <label>Hint</label>
+        <textarea rows="2" disabled>Task hint</textarea>
+      </div>
+
+      <div class="field">
+        <label>File</label>
+      </div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="ui black cancel button">Cancel</button>
+    <div class="ui action left labeled input">
+      <div class="ui label">Score</div>
+      <input type="text" value="50">
+      <div class="ui positive button">
+        Update
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="ui modal task-add-modal">
+  <div class="header">Add task to Competition</div>
+
+  <div class="content">
+    <div class="ui form">
+      <div class="field">
+        <label>Name</label>
+        <input type="text" name="task-name" value="Task name" disabled>
+      </div>
+      <div class="field">
+        <label>Category</label>
+        <input type="text" name="task-category" value="Task category" disabled>
+      </div>
+      <div class="field">
+        <label>Description</label>
+        <textarea rows="3" disabled>Task description</textarea>
+      </div>
+
+      <div class="field">
+        <label>Hint</label>
+        <textarea rows="2" disabled>Task hint</textarea>
+      </div>
+
+      <div class="field">
+        <label>File</label>
+      </div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="ui black cancel button">Cancel</button>
+    <div class="ui action left labeled input">
+      <div class="ui label">Score</div>
+      <input type="text" value="50">
+      <div class="ui positive button">
+        Add to Competition
+      </div>
+    </div>
+  </div>
+</div>
+
+<form class="ui modal task-new-modal">
+  <div class="header">New Task</div>
+  <div class="content">
+    <div class="ui form">
+      <div class="field">
+        <label>Name</label>
+        <input type="text" name="task-name" placeholder="Insert Name">
+      </div>
+      <div class="field">
+        <label>Category</label>
+        <div class="ui fluid search selection dropdown">
+          <input type="hidden" name="task-category">
+          <i class="dropdown icon"></i>
+          <div class="default text">Select Category</div>
+          <div class="menu">
+            <div class="item" data-value="0">Binary Exploitation</div>
+            <div class="item" data-value="1">Reverse Engineering</div>
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Description</label>
+        <textarea rows="3" placeholder="Insert Description"></textarea>
+      </div>
+
+      <div class="field">
+        <label>Hint</label>
+        <textarea rows="2" placeholder="Insert hint"></textarea>
+      </div>
+
+      <div class="field">
+        <label>File</label>
+        <div class="ui left action input">
+          <label for="attachmentName" class="ui labeled icon button btn-file">
+            <i class="attachment upload icon"></i>
+            Select file
+            <input type="file" id="attachmentName" name="attachmentName" style="display: none">
+          </label>
+          <input type="text" id="_attachmentName" disabled>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="actions">
+    <div class="ui black cancel button">Discard</div>
+    <div class="ui positive right labeled icon ok button">
+      Create
+      <i class="checkmark icon"></i>
+    </div>
+  </div>
+</form>
+
+<!-- Bottom menu -->
+<div class="ui inverted bottom secondary pointing menu">
+  <div class="ui container">
+    <div class="right menu">
+      <div class="item menu-item"><a href="#">github</a></div>
+    </div>
+  </div>
+</div>
+
+<script>
+$('.tasks-table').tablesort()
+$('.ui.dropdown').dropdown()
+$('.checkbox').checkbox('attach events', '.check.button', 'check');
+
+$('.task-add').on('click', function() {
+  $('.task-loading').addClass('active');
+
+  //$(this).data("id");
+  // Fetch
+
+  $('.task-loading').removeClass('active');
+
+  $('.task-add-modal').modal('show');
+});
+
+$('.task-remove').on('click', function() {
+  $('.task-loading').addClass('active');
+
+  //$(this).data("id");
+  // Fetch
+
+  $('.task-loading').removeClass('active');
+
+  $('.task-remove-modal').modal('show');
+});
+
+$('.task-update').on('click', function() {
+  $('.task-loading').addClass('active');
+
+  //$(this).data("id");
+  // Fetch
+
+  $('.task-loading').removeClass('active');
+
+  $('.task-update-modal').modal('show');
+});
+</script>
+
+<script>
+
+var MAX_SIZE = 30; // MB
+
+$(document).on('change', '.btn-file :file', function() {
+  var input = $(this);
+
+  if (navigator.appVersion.indexOf("MSIE") != -1) { // IE
+    var label = input.val();
+
+    input.trigger('fileselect', [ 1, label, 0 ]);
+  } else {
+    var label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
+    var numFiles = input.get(0).files ? input.get(0).files.length : 1;
+    var size = input.get(0).files[0].size;
+
+    input.trigger('fileselect', [ numFiles, label, size ]);
+  }
+});
+
+$('.btn-file :file').on('fileselect', function(event, numFiles, label, size) {
+  console.log("ok!");
+  $('#attachmentName').attr('name', 'attachmentName'); // allow upload.
+
+  if (size > 1024 * 1024 * MAX_SIZE ) {
+    alert('max size：<strong>' + MAX_SIZE + '</strong> MB.');
+
+    $('#attachmentName').removeAttr('name'); // cancel upload file.
+  } else {
+    $('#_attachmentName').val(label);
+  }
+});
+
+</script>

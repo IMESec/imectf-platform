@@ -8,7 +8,7 @@
         <!--<th>Término</th>-->
         {% if user["isAdmin"] == true %}
         <th>
-          <a href="/editcomp/{{ comp_id }}">Adicionar Tasks</a>
+          <a href="/competition/{{ comp_id }}/edit">Adicionar Tasks</a>
         </th>
         {% else %}
         <th>{{ name_team }}</th>

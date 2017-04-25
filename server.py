@@ -87,20 +87,20 @@ def get_flags():
 
 def get_dates(comp_id):
     """Returns the end and start dates of current competition"""
-   
+
     dates = db['competitions'].find_one(id=comp_id)
     return dates
 
 def check_running(comp_id):
     """   """
     dates = get_dates(comp_id)
-	 
+
     startDate = datetime.datetime.strptime(dates['date_start'], "%m-%d-%y %H:%M%p").date()
     endDate = datetime.datetime.strptime(dates['date_end'], "%m-%d-%y %H:%M%p").date()
 
     if datetime.datetime.today().date() > startDate:	
-	    if datetime.datetime.today().date() < endDate:
-	        db.query('UPDATE competitions SET running=1 WHERE id=:comp_id', comp_id=comp_id)
+        if datetime.datetime.today().date() < endDate:
+            db.query('UPDATE competitions SET running=1 WHERE id=:comp_id', comp_id=comp_id)
 
 @app.route('/error/<msg>')
 def error(msg):
@@ -197,83 +197,6 @@ def login():
 
     return redirect('/error/invalid_credentials')
 
-"""@app.route('/competition/<comp_id>/')
-@login_required
-def tasks(comp_id):
-    #Displays all the tasks of a competition in a grid
-
-    #check_running(comp_id)
-    user = get_user()
-    userCount = db['users'].count()
-
-    categories = db['categories']
-    catCount = categories.count()
-
-    flags = db['flags']
-
-    tasks = db.query("SELECT * FROM tasks");
-
-    tasks = list(tasks)
-
-    grid = []
-
-    rowCount = 0
-    currentCat = 0
-    currentCatCount = 0
-
-    if len(tasks) == 0:
-        row = [None] * catCount
-        grid.append(row)
-
-    for task in tasks:
-        cat = task["category"] - 1
-
-        while currentCatCount + 1 >= rowCount:
-            row = [None] * catCount
-            grid.append(row)
-            rowCount += 1
-
-        if currentCat != cat:
-            if user['isAdmin']:
-                endTask = { "end": True, "category": currentCat }
-                grid[currentCatCount][currentCat] = endTask
-            currentCat = cat
-            currentCatCount = 0
-
-
-        percentComplete = (float(flags.count(task_id=task['id'])) / userCount) * 100
-
-        #hax for bad css (if 100, nothing will show)
-        if percentComplete == 100:
-            percentComplete = 99.99
-
-        task['percentComplete'] = percentComplete
-
-        isComplete = bool(flags.count(task_id=task['id'], user_id=user['id']))
-
-        task['isComplete'] = isComplete
-
-        grid[currentCatCount][cat] = task
-        currentCatCount += 1
-
-    #add the final endTask element
-    if user['isAdmin']:
-        if len(tasks) > 0:
-            endTask = { "end": True, "category": currentCat }
-            grid[currentCatCount][currentCat] = endTask
-
-        #if any None in first row, add end task
-        for i, t in enumerate(grid[0]):
-            if t is None:
-                endTask = { "end": True, "category": i }
-                grid[0][i] = endTask
-
-
-    # Render template
-    render = render_template('frame.html', lang=lang, page='competition.html',
-        user=user, categories=categories, grid=grid, comp_id=comp_id)
-    return make_response(render)"""
-
 @app.route('/competition/<comp_id>/')
 @login_required
 def competition(comp_id):
@@ -289,9 +212,10 @@ def competition(comp_id):
 
     tasks = db.query("SELECT * FROM tasks t, task_competition tc WHERE t.id = tc.task_id AND tc.comp_id = :comp_id", comp_id=comp_id)
     tasks = list(tasks)
+    print tasks
 
     """
-    tasks = dict()
+    tasks = []
     for t in tasks_db:
         tasks[t.category]
     """
@@ -301,20 +225,26 @@ def competition(comp_id):
         user=user, comp_id=comp_id, tasks=tasks, name_team=name_team)
     return make_response(render)
 
-@app.route('/editcomp/<comp_id>', methods=['GET'])
+@app.route('/competition/<comp_id>/edit', methods=['GET'])
 @admin_required
-def editcomp(comp_id):
+def competition_edit(comp_id):
     user = get_user()
 
     tasks_comp = db.query("SELECT * FROM tasks t LEFT OUTER JOIN task_competition tc ON t.id = tc.task_id AND tc.comp_id = :comp_id", comp_id=comp_id)
     tasks_comp = list(tasks_comp)
 
-    render = render_template('frame.html', lang=lang, tasks_comp=tasks_comp, page='editcomp.html')
+    tasks_db = db.query("SELECT * FROM tasks")
+    tasks_db = list(tasks_db)
+
+    #tasks = [x for x in tasks_db if not [y for y in tasks_comp and y['id'] == x['id']]]
+    #print tasks_db
+
+    render = render_template('frame.html', lang=lang, tasks_comp=tasks_comp, page='competition-edit.html')
     return make_response(render)
 
-@app.route('/editcomp/<comp_id>', methods=['POST'])
+@app.route('/competition/<comp_id>/edit', methods=['POST'])
 @admin_required
-def editcompsubmit(comp_id):
+def competition_edit_post(comp_id):
     try:
         type_action = bleach.clean(request.form['type'], tags=[])
         task_id = bleach.clean(request.form['id'], tags=[])
@@ -422,7 +352,7 @@ def addcompetitionsubmit():
     except KeyError:
         return redirect('/error/form')
 
-    else:	
+    else:
 
         competitions = db['competitions']
         competition = dict(
@@ -436,35 +366,18 @@ def addcompetitionsubmit():
 
 
 
-#@app.route('/addtask/<comp_id>/<cat>/', methods=['GET'])
-@app.route('/addtask/', methods=['GET'])
+@app.route('/tasks/add', methods=['POST'])
 @admin_required
 def addtask():
-    #category = db.query('SELECT * FROM categories LIMIT 1 OFFSET :cat', cat=cat)
-    category = db.query('SELECT * FROM categories')
-    category = list(category)
-    #category = category[0]
-
-    user = get_user()
-
-    render = render_template('frame.html', lang=lang, user=user,
-            categories=category, page='addtask.html')
-    return make_response(render)
-
-@app.route('/addtask/', methods=['POST'])
-@admin_required
-def addtasksubmit():
     try:
-        name = bleach.clean(request.form['name'], tags=[])
-        desc = bleach.clean(request.form['desc'], tags=descAllowedTags)
-        #competition = comp_id
-        category = int(request.form['category'])
-        #score = int(request.form['score'])
-        hint = request.form['hint']
-        flag = request.form['flag']
+        name = bleach.clean(request.form['task-name'], tags=[])
+        desc = bleach.clean(request.form['task-desc'], tags=descAllowedTags)
+        category = int(request.form['task-category'])
+        hint = request.form['task-hint']
+        flag = request.form['task-flag']
     except KeyError:
+        #return jsonify({"status": "ERROR"})
         return redirect('/error/form')
-
     else:
         tasks = db['tasks']
         #task = dict(name=name,desc=desc,competition=competition,category=category,score=score,hint=hint,flag=flag)
@@ -474,7 +387,7 @@ def addtasksubmit():
                 category=category,
                 hint=hint,
                 flag=flag)
-        file = request.files['file']
+        file = request.files['task-file']
 
         if file:
             filename, ext = os.path.splitext(file.filename)
@@ -488,8 +401,9 @@ def addtasksubmit():
 
         tasks.insert(task)
 
-        #return redirect(url_for('tasks', comp_id=comp_id))
-        return redirect(url_for('listTasks'))
+        task = tasks.find_one(name = task["name"], flag = task["flag"])
+
+        return jsonify({"status": "OK", "task" : task})
 
 @app.route('/tasks/', methods=['GET'])
 @admin_required
