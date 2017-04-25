@@ -419,6 +419,13 @@ def tasks():
             categories=categories, tasks=tasks, page='tasks.html')
     return make_response(render)
 
+@app.route('/task/<tid>', methods=['GET', 'POST'])
+@admin_required
+def task_get(tid):
+    print tid
+    task = db["tasks"].find_one(id=tid)
+    return jsonify(task)
+
 @app.route('/task/<tid>/edit', methods=['GET'])
 @admin_required
 def edittask(tid):

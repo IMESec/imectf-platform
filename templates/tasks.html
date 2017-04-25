@@ -13,13 +13,13 @@
     </thead>
     <tbody id="task-table-body">
       {% for task in tasks %}
-      <tr>
+      <tr data-id="{{ task.id }}">
         <td class="three wide">{{ task.name }}</td>
         <td class="three wide">{{ categories[task.category-1].name }}</td>
         <td class="eight wide">{{ task.desc }}</td>
         <td class="two wide center aligned">
-          <a href="#" data-id="1"><i class="large edit icon task-edit"></i></a>
-          <a href="#"><i class="large trash icon task-delete"></i></a>
+          <a href="#" class="task-edit"><i class="large edit icon"></i></a>
+          <a href="#" class="task-delete"><i class="large trash icon"></i></a>
         </td>
       </tr>
       {% endfor %}
@@ -36,7 +36,7 @@
   </table>
 </div>
 
-<form id="task-delete-form" class="ui modal task-delete-modal">
+<form id="task-delete-form" class="ui modal task-delete-modal" action="/task/">
   <div class="header">{{ lang.tasks.delete }}</div>
 
   <div class="content">
@@ -47,7 +47,16 @@
       </div>
       <div class="field">
         <label>{{ lang.tasks.category }}</label>
-        <input type="text" name="task-category" value="Task category" disabled>
+        <div class="ui fluid search selection dropdown disabled task-category-dropdown">
+          <input type="hidden" name="task-category">
+          <i class="dropdown icon"></i>
+          <div class="default text">{{ lang.tasks.category_placeholder }}</div>
+          <div class="menu">
+            {% for category in categories %}
+            <div class="item" data-value="{{ category.id }}">{{ category.name }}</div>
+            {% endfor %}
+          </div>
+        </div>
       </div>
       <div class="field">
         <label>{{ lang.tasks.desc }}</label>
@@ -66,7 +75,7 @@
 
       <div class="field">
         <label>{{ lang.tasks.flag }}</label>
-        <input type="text" name="task-file" value="Task flag" disabled>
+        <input type="text" name="task-flag" value="Task flag" disabled>
       </div>
     </div>
   </div>
@@ -80,7 +89,7 @@
   </div>
 </form>
 
-<form id="task-edit-form" class="ui modal task-edit-modal">
+<form id="task-edit-form" class="ui modal task-edit-modal" action="/task/">
   <div class="header">{{ lang.tasks.edit }}</div>
   <div class="content">
     <div class="ui form">
@@ -90,7 +99,7 @@
       </div>
       <div class="field">
         <label>{{ lang.tasks.category }}</label>
-        <div class="ui fluid search selection dropdown">
+        <div class="ui fluid search selection dropdown task-category-dropdown">
           <input type="hidden" name="task-category">
           <i class="dropdown icon"></i>
           <div class="default text">{{ lang.tasks.category_placeholder }}</div>
@@ -151,7 +160,7 @@
       </div>
       <div class="field">
         <label>{{ lang.tasks.category }}</label>
-        <div class="ui fluid search selection dropdown">
+        <div class="ui fluid search selection dropdown task-category-dropdown">
           <input type="hidden" name="task-category" required>
           <i class="dropdown icon"></i>
           <div class="default text category-text">{{ lang.tasks.category_placeholder }}</div>
@@ -216,13 +225,30 @@ $(function() {
   categories[{{ c.id }}] = "{{ c.name }}";
   {% endfor %}
 
+  var static = "{{ url_for('static', filename='files/') }}";
+
   function resetForm(form) {
     form.find('input:text').val('')
     form.find('.category-text').text('{{ lang.tasks.category_placeholder }}')
     form.find('.category-text').addClass('default')
   }
 
-  function fetchTaskToForm(task_id) {
+  function fetchTaskToForm(task_id, form) {
+    $.ajax({
+      url: form.attr('action') + task_id,
+      success: function(res) {
+        $.each(res, function(name, v) {
+          var elem = form.find('[name=task-'+name+']');
+          if (elem.length > 0 && elem.attr('type') != "file")
+            elem.val(v);
+        });
+
+        form.find('.task-category-dropdown').dropdown('set selected', res['category']);
+      },
+      error: function() {
+        console.log("error");
+      }
+    });
   }
 
   $('.tasks-table').tablesort()
@@ -230,10 +256,7 @@ $(function() {
 
   $('.task-edit').on('click', function() {
     $('.task-loading').addClass('active');
-
-    //$(this).data("id");
-    // Fetch
-
+    fetchTaskToForm($(this).closest('tr').data('id'), $('#task-edit-form'));
     $('.task-loading').removeClass('active');
 
     $('.task-edit-modal').modal('show');
@@ -241,10 +264,7 @@ $(function() {
 
   $('.task-delete').on('click', function() {
     $('.task-loading').addClass('active');
-
-    //$(this).data("id");
-    // Fetch
-
+    fetchTaskToForm($(this).closest('tr').data('id'), $('#task-delete-form'));
     $('.task-loading').removeClass('active');
 
     $('.task-delete-modal').modal('show');
@@ -268,13 +288,13 @@ $(function() {
         var task = res['task'];
 
         var newrow =
-        '<tr> \
+        '<tr data-id="' + task['id'] + '> \
           <td class="three wide">' + task['name'] + '</td> \
           <td class="three wide">' + categories[task['category']] + '</td> \
           <td class="eight wide">' + task['desc'] + '</td> \
           <td class="two wide center aligned"> \
-            <a href="#" data-id="' + task['id'] + '"><i class="large edit icon task-edit"></i></a> \
-            <a href="#"><i class="large trash icon task-delete"></i></a> \
+            <a href="#" class="task-edit"><i class="large edit icon"></i></a> \
+            <a href="#" class="task-delete"><i class="large trash icon"></i></a> \
           </td> \
         </tr>';
 
