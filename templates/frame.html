@@ -8,6 +8,7 @@
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
     <script src="{{ url_for('static', filename='js/jquery-3.2.1.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/semantic.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/tablesort.js') }}"></script>
   </head>
   <body>
     <!-- Navigation Menu -->
@@ -39,6 +40,10 @@
           </div>
         </div>
       </div>
+    </div>
+
+    <div class="ui dimmer task-loading">
+      <div class="ui large text loader">{{ lang.general.loading }}</div>
     </div>
   </body>
 </html>

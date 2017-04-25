@@ -290,6 +290,12 @@ def competition(comp_id):
     tasks = db.query("SELECT * FROM tasks t, task_competition tc WHERE t.id = tc.task_id AND tc.comp_id = :comp_id", comp_id=comp_id)
     tasks = list(tasks)
 
+    """
+    tasks = dict()
+    for t in tasks_db:
+        tasks[t.category]
+    """
+
     # Render template
     render = render_template('frame.html', lang=lang, page='competition.html',
         user=user, comp_id=comp_id, tasks=tasks, name_team=name_team)
@@ -423,7 +429,7 @@ def addcompetitionsubmit():
             name=name,
             desc=desc
             #date_start=date_start
-    	)
+            )
 
         competitions.insert(competition)
         return redirect('/competitions')
@@ -485,31 +491,18 @@ def addtasksubmit():
         #return redirect(url_for('tasks', comp_id=comp_id))
         return redirect(url_for('listTasks'))
 
-@app.route('/listTasks/', methods=['GET'])
+@app.route('/tasks/', methods=['GET'])
 @admin_required
-def listTasks():
-    category = db.query('SELECT * FROM categories')
-    category = list(category)
-    num_cat = len(category)
+def tasks():
+    categories = db.query('SELECT * FROM categories')
+    categories = list(categories)
 
     tasks = db.query('SELECT * FROM tasks')
     tasks = list(tasks)
 
-    temp_list = []
-    task_cat = []
-    for i in range(num_cat):
-        temp_list.append(category[i])
-        for task in tasks:
-            if task['category'] == i + 1:
-                temp_list.append(task)
-
-        task_cat.append(temp_list)
-        temp_list = []
-
     user = get_user()
-
     render = render_template('frame.html', lang=lang, user=user,
-            task_cat=task_cat, tasks=tasks, page='listTasks.html')
+            categories=categories, tasks=tasks, page='tasks.html')
     return make_response(render)
 
 @app.route('/task/<tid>/edit', methods=['GET'])
@@ -739,8 +732,7 @@ def index():
     user = get_user()
 
     # Render template
-    render = render_template('frame.html', lang=lang,
-        page='main.html', user=user)
+    render = render_template('frame.html', lang=lang, page='main.html', user=user)
     return make_response(render)
 
 """Initializes the database and sets up the language"""

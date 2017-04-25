@@ -1,5 +1,8 @@
 {
   "portugues": {
+    "general": {
+      "loading": "Loading..."
+    },
     "frame": {
       "title": "IMECTF",
       "login": "Login",
@@ -14,18 +17,50 @@
       "register": "Registrar"
     },
     "main": {
-      "title": "IMESec - Banco de Questões",
-      "text": "Seja bem vindo ao banco de questões da IMESec"
+      "title": "changeme",
+      "text": "changeme"
     },
+    "tasks": {
+      "title": "Tasks",
+      "name": "Name",
+      "category": "Category",
+      "desc": "Description",
+      "hint": "Hint",
+      "file": "File",
+      "flag": "Flag",
+      "name_placeholder": "Insert Name",
+      "category_placeholder": "Select Category",
+      "desc_placeholder": "Insert Description",
+      "hint_placeholder": "Insert Hint",
+      "file_placeholder": "Select File",
+      "flag_placeholder": "Insert Flag",
+
+      "add": "Add Task",
+
+      "delete": "Delete Task",
+      "delete_cancel": "Cancel",
+      "delete_accept": "Delete",
+
+      "edit": "Edit Task",
+      "edit_cancel": "Cancel",
+      "edit_accept": "Save",
+
+      "new": "New Task",
+      "new_cancel": "Discard",
+      "new_accept": "Create"
+    },
+
+
+
+
+
+
     "about": {
       "title": "Sobre",
       "news": "Novidades",
       "news_text": "Aproveitem as 48h para ver todas as questões, procurarem na internet, conversar com os outros da equipe.<br>O objetivo desse Capture The Flag é incentivar que todos pesquisem como as coisas funcionam, então aproveitem  para aprender!",
       "rules": "Regras",
       "rules_text": "- Equipes de até 3 pessoas utilizando apenas uma conta<br>- Toda consulta é válida e recomendada<br>- As flags devem ser submetidas com o formato: CTFIME{FLAG}"
-    },
-    "tasks": {
-      "title": "Tarefas"
     },
     "task": {
       "description": "Descrição",
@@ -45,10 +80,10 @@
       "title": "Adicionar categoria",
       "name_label": "Nome da categoria: "
     },
-   "reunions":{
+    "reunions":{
       "title": "Reuniões"
-   },
-   "addcompetition" : {
+    },
+    "addcompetition" : {
       "add_title": "Nova competição",
       "edit_title": "Editar competição",
       "delete_title": "Deletar competição",
@@ -59,7 +94,7 @@
       "date_end": "Data de término" ,
       "num_participants": "Quantidade de participantes"
     },
-   "addtask" : {
+    "addtask" : {
       "add_title": "Adicionar tarefa",
       "edit_title": "Editar tarefa",
       "delete_title": "Deletar tarefa",
