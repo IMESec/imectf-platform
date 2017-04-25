@@ -8,9 +8,9 @@ body {
 
 .main {
   position: relative;
-  height: calc(100% - 92px);
+  /*height: calc(100% - 92px);*/
   margin-top: 14px;
-  margin-bottom: 14px;
+  margin-bottom: 60px;
 }
 
 .full {
