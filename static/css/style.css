@@ -8,9 +8,8 @@ body {
 
 .main {
   position: relative;
-  /*height: calc(100% - 92px);*/
-  margin-top: 14px;
-  margin-bottom: 60px;
+  padding-top: 60px;
+  padding-bottom: 60px;
 }
 
 .full {
@@ -28,6 +27,12 @@ body {
   border: none;
   margin: 0;
   z-index: 100;
+  width: 100%;
+}
+
+.top.menu {
+  position: absolute;
+  top: 0;
 }
 
 .menu-item {

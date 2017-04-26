@@ -130,6 +130,16 @@ def _set_sqlite_pragma(dbapi_connection, connection_record):
         cursor.execute("PRAGMA foreign_keys=ON;")
         cursor.close()
 
+@app.route('/login', methods = ['GET'])
+def login_page():
+    user = get_user()
+    if user:
+        return redirect('/')
+
+    render = render_template('frame.html', lang=lang, page='login.html')
+    return make_response(render)
+
+
 @app.route('/login', methods = ['POST'])
 def login():
     from werkzeug.security import check_password_hash
