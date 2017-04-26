@@ -101,8 +101,9 @@ body {
 .competition {
   display: table;
   width: 100%;
-  margin-top: 0;
-  margin-bottom: 46px;
+  height: 100%;
+  padding-top: 46px;
+  padding-bottom: 46px;
 }
 
 .competition-list {

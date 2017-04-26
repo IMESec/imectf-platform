@@ -198,6 +198,8 @@ def login():
 @login_required
 def competition(comp_id):
     user = get_user()
+
+    """
     name_team = ""
     if not user['isAdmin']:
         player_team = db.query("SELECT * FROM teams t, team_player tp WHERE tp.id_team = t.id AND t.comp_id = :comp_id AND tp.id_user = :user_id", comp_id=comp_id, user_id=session['user_id'])
@@ -210,6 +212,7 @@ def competition(comp_id):
     tasks = db.query("SELECT * FROM tasks t, task_competition tc WHERE t.id = tc.task_id AND tc.comp_id = :comp_id", comp_id=comp_id)
     tasks = list(tasks)
     print tasks
+    """
 
     """
     tasks = []
@@ -218,8 +221,11 @@ def competition(comp_id):
     """
 
     # Render template
+    #render = render_template('frame.html', lang=lang, page='competition.html',
+    #    user=user, comp_id=comp_id, tasks=tasks, name_team=name_team)
+
     render = render_template('frame.html', lang=lang, page='competition.html',
-        user=user, comp_id=comp_id, tasks=tasks, name_team=name_team)
+                             user=user)
     return make_response(render)
 
 @app.route('/competition/<comp_id>/edit', methods=['GET'])
