@@ -1,0 +1,28 @@
+<div class="ui container main">
+  <div class="ui middle aligned center aligned grid full">
+    <div class="column login-form">
+      <form class="ui large form" method="post">
+        <div class="ui stacked segment">
+          <h2 class="ui header">{{ lang.login.login }}</h2>
+          <div class="field">
+            <div class="ui right corner labeled input">
+              <div class="ui right corner label"><i class="user icon"></i></div>
+              <input type="text" name="username" placeholder="{{ lang.login.login_placeholder }}" required>
+            </div>
+          </div>
+          <div class="field">
+            <div class="ui right corner labeled input">
+              <div class="ui right corner label"><i class="lock icon"></i></div>
+              <input type="password" name="password" placeholder="{{ lang.login.pass_placeholder }}" required>
+            </div>
+          </div>
+          <div class="ui buttons">
+            <button type="submit" name="login-button" class="ui positive button">{{ lang.login.login }}</button>
+            <div class="or"></div>
+            <button type="submit" name="register-button" class="ui primary button">{{ lang.login.register }}</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
