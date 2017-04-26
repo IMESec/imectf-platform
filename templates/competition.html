@@ -2,12 +2,12 @@
   <div class="competition-list">
     <div class="competition-list-header">
       <i class="archive icon"></i>
-      <span>{{ Competition }} Explorer</span>
+      <span>{{ competition.name }} Explorer</span>
     </div>
     <div class="row">
 
       <div class="ui list accordion">
-
+        {% if user.isAdmin %}
         <div class="item ui">
           <a class="accordion-title active">
             <i class="spy open icon"></i>
@@ -37,6 +37,7 @@
 
           </div>
         </div>
+        {% endif %}
 
         <div class="item ui">
           <div class="right floated content score">
@@ -76,96 +77,39 @@
           </div>
         </div>
 
+        {% for category in categories %}
+
         <div class="item">
           <a class="accordion-title active">
             <i class="folder open icon"></i>
             <div class="content">
-              <div class="header">Cryptography</div>
+              <div class="header">{{ category.name }}</div>
             </div>
           </a>
 
           <div class="list accordion-content active">
 
+            {% for task in tasks if task.category == category.id %}
+
             <a class="item problem">
               <div class="right floated content">
-                <div class="header">+50</div>
+                <div class="header">{{ "%+d"|format(task.score) }}</div>
               </div>
 
               <i class="file icon"></i>
               <i class="flag icon"></i>
 
               <div class="content problem-name">
-                <div class="header">SmallRSA AAAAAAAAAAAAAAAAAAAAAAAA</div>
+                <div class="header">{{ task.name }}</div>
               </div>
             </a>
 
-            <a class="item problem accepted">
-              <div class="right floated content">
-                <div class="header">+50</div>
-              </div>
-
-              <i class="file icon"></i>
-              <i class="flag icon"></i>
-
-              <div class="content">
-                <div class="header">SmallSign</div>
-              </div>
-            </a>
-
-            <a class="item problem">
-              <div class="right floated content">
-                <div class="header">+250</div>
-              </div>
-
-              <i class="file icon"></i>
-              <i class="flag icon"></i>
-
-              <div class="content">
-                <div class="header">Vigenere</div>
-              </div>
-            </a>
+            {% endfor %}
 
           </div>
         </div>
 
-        <div class="item">
-          <a class="accordion-title active">
-            <i class="folder open icon"></i>
-            <div class="content">
-              <div class="header">Binary Exploitation</div>
-            </div>
-          </a>
-
-          <div class="list accordion-content active">
-
-            <a class="item problem">
-              <div class="right floated content">
-                <div class="header">+50</div>
-              </div>
-
-              <i class="file icon"></i>
-              <i class="flag icon"></i>
-
-              <div class="content">
-                <div class="header">Blackjack</div>
-              </div>
-            </a>
-
-            <a class="item problem">
-              <div class="right floated content">
-                <div class="header">+150</div>
-              </div>
-
-              <i class="file icon"></i>
-              <i class="flag icon"></i>
-
-              <div class="content">
-                <div class="header">Loop</div>
-              </div>
-            </a>
-
-          </div>
-        </div>
+        {% endfor %}
 
       </div>
     </div>

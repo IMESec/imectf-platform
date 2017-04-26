@@ -199,6 +199,8 @@ def login():
 def competition(comp_id):
     user = get_user()
 
+    competition = db['competitions'].find_one(id=comp_id)
+
     """
     name_team = ""
     if not user['isAdmin']:
@@ -208,24 +210,16 @@ def competition(comp_id):
         if len(player_team) == 0:
             return redirect(url_for('teamsign', comp_id=comp_id))
         name_team = player_team[0]['name']
+    """
+
+    categories = list(db['categories'].all())
 
     tasks = db.query("SELECT * FROM tasks t, task_competition tc WHERE t.id = tc.task_id AND tc.comp_id = :comp_id", comp_id=comp_id)
     tasks = list(tasks)
-    print tasks
-    """
-
-    """
-    tasks = []
-    for t in tasks_db:
-        tasks[t.category]
-    """
-
-    # Render template
-    #render = render_template('frame.html', lang=lang, page='competition.html',
-    #    user=user, comp_id=comp_id, tasks=tasks, name_team=name_team)
 
     render = render_template('frame.html', lang=lang, page='competition.html',
-                             user=user)
+                             user=user, competition=competition, categories=categories,
+                             tasks=tasks)
     return make_response(render)
 
 @app.route('/competition/<comp_id>/edit', methods=['GET'])
