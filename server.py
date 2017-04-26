@@ -225,12 +225,12 @@ def competition_edit(comp_id):
     tasks = list(tasks)
 
     render = render_template('frame.html', lang=lang, page='competition-edit.html',
-                             tasks_comp=tasks_comp, tasks=tasks, competition=competition, categories=categories)
+                             user=get_user(), tasks_comp=tasks_comp, tasks=tasks, competition=competition, categories=categories)
     return make_response(render)
 
 @app.route('/competition/<comp_id>/addtask', methods=['POST'])
 @admin_required
-def competition_edit_post(comp_id):
+def competition_add_task(comp_id):
     try:
         comp_id = int(comp_id)
         task_id = int(request.form['task-id']);
@@ -251,7 +251,41 @@ def competition_edit_post(comp_id):
         return jsonify({"status": "OK", "task" : task[0]})
 
 
+@app.route('/competition/<comp_id>/edittask', methods=['POST'])
+@admin_required
+def competition_edit_task(comp_id):
+    try:
+        comp_id = int(comp_id)
+        task_id = int(request.form['task-id']);
+        score = int(request.form['task-score']);
+    except KeyError:
+        return jsonify({"status": "ERROR", "message": "Internal error!"});
+    else:
+        task_competition = db['task_competition']
+        entry = task_competition.find_one(task_id = task_id, comp_id = comp_id)
+        if not entry:
+            return jsonify({"status": "ERROR", "message": "Not found"});
 
+        entry['score'] = score
+        task_competition.update(entry, ['task_id', 'comp_id'])
+
+        task = list(db.query("SELECT * FROM tasks t JOIN task_competition tc ON t.id = :task_id AND tc.task_id = :task_id AND tc.comp_id = :comp_id LIMIT 1",
+                        task_id = task_id, comp_id = comp_id))
+        return jsonify({"status": "OK", "task" : task[0]})
+
+
+@app.route('/competition/<comp_id>/removetask', methods=['POST'])
+@admin_required
+def competition_remove_task(comp_id):
+    try:
+        comp_id = int(comp_id)
+        task_id = int(request.form['task-id']);
+    except KeyError:
+        return jsonify({"status": "ERROR", "message": "Internal error!"});
+    else:
+        db['task_competition'].delete(task_id = task_id, comp_id = comp_id)
+        task = db['tasks'].find_one(id = task_id)
+        return jsonify({"status": "OK", "task" : task})
 
 
 
@@ -389,7 +423,7 @@ def tasks():
     return make_response(render)
 
 
-@app.route('/tasks/add', methods=['POST'])
+@app.route('/task/add', methods=['POST'])
 @admin_required
 def task_add():
     try:
@@ -486,7 +520,18 @@ def task_delete():
 @admin_required
 def task_get(tid):
     task = db["tasks"].find_one(id=tid)
+    if not task:
+        return jsonify({ 'status': 'ERROR', 'message': 'Not found' })
     return jsonify(task)
+
+@app.route('/task_competition/<cid>-<tid>', methods=['GET', 'POST'])
+@admin_required
+def task_competition_get(cid, tid):
+    task = list(db.query('SELECT * FROM tasks t JOIN task_competition tc ON t.id = tc.task_id AND t.id = :task_id AND tc.comp_id = :comp_id LIMIT 1',
+                         task_id = tid, comp_id = cid));
+    if len(task) == 0:
+        return jsonify({ 'status': 'ERROR', 'message': 'Not found' })
+    return jsonify(task[0])
 
 
 

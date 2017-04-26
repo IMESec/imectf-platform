@@ -55,8 +55,11 @@
       "remove_cancel": "Cancel",
       "remove_accept": "Remove from Competition",
       "add": "Add task to competition",
-      "add_cancel": "Cancel",
-      "add_accept": "Add to Competition"
+      "add_cancel": "Discard",
+      "add_accept": "Add to Competition",
+      "edit": "Edit task on Competition",
+      "edit_cancel": "Discard",
+      "edit_accept": "Update"
     },
 
 

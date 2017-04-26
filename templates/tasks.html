@@ -151,7 +151,7 @@
   </div>
 </form>
 
-<form id="task-new-form" class="ui modal task-new-modal" action="/tasks/add">
+<form id="task-new-form" class="ui modal task-new-modal" action="/task/add">
   <div class="header">{{ lang.tasks.new }}</div>
   <div class="content">
     <div class="ui form">
@@ -216,7 +216,7 @@
 $(function() {
   $(document).on('click', '.task-edit', function() {
     $('.task-loading').addClass('active');
-    fetchTaskToForm($(this).closest('tr').data('id'), $('#task-edit-form'));
+    fetchTaskToForm('/task/' + $(this).closest('tr').data('id'), $('#task-edit-form'));
     $('.task-loading').removeClass('active');
 
     $('.task-edit-modal')
@@ -226,7 +226,7 @@ $(function() {
 
   $(document).on('click', '.task-delete', function() {
     $('.task-loading').addClass('active');
-    fetchTaskToForm($(this).closest('tr').data('id'), $('#task-delete-form'));
+    fetchTaskToForm('/task/' + $(this).closest('tr').data('id'), $('#task-delete-form'));
     $('.task-loading').removeClass('active');
 
     $('.task-delete-modal').modal('show');

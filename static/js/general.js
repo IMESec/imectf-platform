@@ -1,21 +1,3 @@
-  function fetchTaskToForm(task_id, form) {
-    $.ajax({
-      url: '/task/' + task_id,
-      success: function(res) {
-        $.each(res, function(name, v) {
-          var elem = form.find('[name=task-'+name+']');
-          if (elem.length > 0 && elem.attr('type') != "file")
-            elem.val(v);
-        });
-
-        form.find('.task-category-dropdown').dropdown('set selected', res['category']);
-      },
-      error: function() {
-        console.log("error");
-      }
-    });
-  }
-
 $(function() {
   /*****************/
   /*  Semantic UI  */
@@ -75,5 +57,23 @@ $(function() {
         }
       }
     });
-  }
+  };
+
+  fetchTaskToForm = function(url, form) {
+    $.ajax({
+      url: url,
+      success: function(res) {
+        $.each(res, function(name, v) {
+          var elem = form.find('[name=task-'+name+']');
+          if (elem.length > 0 && elem.attr('type') != "file")
+            elem.val(v);
+        });
+
+        form.find('.task-category-dropdown').dropdown('set selected', res['category']);
+      },
+      error: function() {
+        console.log("error");
+      }
+    });
+  };
 });

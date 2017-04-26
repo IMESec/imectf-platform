@@ -19,7 +19,7 @@
         <td class="three wide">{{ categories[task.category-1].name }}</td>
         <td class="eight wide">{{ task.desc }}</td>
         <td class="two wide center aligned">
-          <a href="#" class="task-update"><i class="large edit icon"></i></a>
+          <a href="#" class="task-edit"><i class="large edit icon"></i></a>
           <a href="#" class="task-remove"><i class="large minus square icon"></i></a>
         </td>
       </tr>
@@ -109,53 +109,69 @@
 
   <div class="actions">
     <div class="ui black cancel button">{{ lang.competition.remove_cancel }}</div>
-    <div class="ui negative right labeled icon button">
+    <button type="submit" class="ui negative right labeled icon button">
       {{ lang.competition.remove_accept }}
       <i class="trash icon"></i>
-    </div>
+    </button>
   </div>
 </form>
 
-<div class="ui modal task-update-modal">
-  <div class="header">Update task on Competition</div>
+<form id="task-edit-form" class="ui modal task-edit-modal" action="/competition/{{ competition.id }}/edittask">
+  <div class="header">{{ lang.competition.edit }}</div>
 
   <div class="content">
     <div class="ui form">
+      <input type="hidden" name="task-id">
       <div class="field">
-        <label>Name</label>
-        <input type="text" name="task-name" value="Task name" disabled>
+        <label>{{ lang.tasks.name }}</label>
+        <input type="text" name="task-name" disabled>
       </div>
       <div class="field">
-        <label>Category</label>
-        <input type="text" name="task-category" value="Task category" disabled>
+        <label>{{ lang.tasks.category }}</label>
+        <div class="ui fluid search selection dropdown disabled task-category-dropdown">
+          <input type="hidden" name="task-category">
+          <i class="dropdown icon"></i>
+          <div class="default text"></div>
+          <div class="menu">
+            {% for category in categories %}
+            <div class="item" data-value="{{ category.id }}">{{ category.name }}</div>
+            {% endfor %}
+          </div>
+        </div>
       </div>
       <div class="field">
-        <label>Description</label>
-        <textarea rows="3" disabled>Task description</textarea>
+        <label>{{ lang.tasks.desc }}</label>
+        <textarea rows="3" disabled></textarea>
       </div>
 
       <div class="field">
-        <label>Hint</label>
-        <textarea rows="2" disabled>Task hint</textarea>
+        <label>{{ lang.tasks.hint }}</label>
+        <textarea rows="2" disabled></textarea>
       </div>
 
       <div class="field">
-        <label>File</label>
+        <label>{{ lang.tasks.file }}</label>
+        <input type="text" name="task-file" disabled>
+      </div>
+
+      <div class="field">
+        <label>{{ lang.tasks.flag }}</label>
+        <input type="text" name="task-flag" disabled>
       </div>
     </div>
   </div>
 
   <div class="actions">
-    <button class="ui black cancel button">Cancel</button>
+    <button class="ui black cancel button">{{ lang.competition.edit_cancel }}</button>
     <div class="ui action left labeled input">
-      <div class="ui label">Score</div>
-      <input type="text" value="50">
-      <div class="ui positive button">
-        Update
-      </div>
+      <div class="ui label">{{ lang.tasks.score }}</div>
+      <input name="task-score" type="number" required>
+      <button type="submit" class="ui positive button">
+        {{ lang.competition.edit_accept }}
+      </button>
     </div>
   </div>
-</div>
+</form>
 
 <form id="task-add-form" class="ui modal task-add-modal" action="/competition/{{ competition.id }}/addtask">
   <div class="header">{{ lang.competition.add }}</div>
@@ -206,7 +222,7 @@
     <div class="ui black cancel button">{{ lang.competition.add_cancel }}</div>
     <div class="ui action left labeled input">
       <div class="ui label">{{ lang.tasks.score }}</div>
-      <input name="task-score" type="text" value="50">
+      <input name="task-score" type="number" placeholder="50" required>
       <button type="submit" class="ui positive button">
         {{ lang.competition.add_accept }}
       </button>
@@ -214,7 +230,7 @@
   </div>
 </form>
 
-<form id="task-new-form" class="ui modal task-new-modal" action="/tasks/add">
+<form id="task-new-form" class="ui modal task-new-modal" action="/task/add">
   <div class="header">{{ lang.tasks.new }}</div>
   <div class="content">
     <div class="ui form">
@@ -275,15 +291,6 @@
   </div>
 </form>
 
-<!-- Bottom menu -->
-<div class="ui inverted bottom secondary pointing menu">
-  <div class="ui container">
-    <div class="right menu">
-      <div class="item menu-item"><a href="#">github</a></div>
-    </div>
-  </div>
-</div>
-
 <script>
 $(function() {
   $('.task-new').on('click', function() {
@@ -295,7 +302,7 @@ $(function() {
 
   $(document).on('click', '.task-add', function() {
     $('.task-loading').addClass('active');
-    fetchTaskToForm($(this).closest('tr').data('id'), $('#task-add-form'));
+    fetchTaskToForm('/task/' + $(this).closest('tr').data('id'), $('#task-add-form'));
     $('.task-loading').removeClass('active');
 
     $('.task-add-modal')
@@ -303,26 +310,91 @@ $(function() {
       .modal('show');
   });
 
-  $('.task-remove').on('click', function() {
+  $(document).on('click', '.task-edit', function() {
     $('.task-loading').addClass('active');
-
-    //$(this).data("id");
-    // Fetch
-
+    fetchTaskToForm('/task_competition/{{ competition.id }}-' + $(this).closest('tr').data('id'), $('#task-edit-form'));
     $('.task-loading').removeClass('active');
 
-    $('.task-remove-modal').modal('show');
+    $('.task-edit-modal')
+      .modal({ onApprove: function() { return false; } })
+      .modal('show');
   });
 
-  $('.task-update').on('click', function() {
+  $(document).on('click', '.task-remove', function() {
     $('.task-loading').addClass('active');
-
-    //$(this).data("id");
-    // Fetch
-
+    fetchTaskToForm('/task/' + $(this).closest('tr').data('id'), $('#task-remove-form'));
     $('.task-loading').removeClass('active');
 
-    $('.task-update-modal').modal('show');
+    $('.task-remove-modal')
+      .modal({ onApprove: function() { return false; } })
+      .modal('show');
+  });
+
+  $('#task-remove-form').submit(function(event) {
+    event.preventDefault();
+
+    var id = $(this).find('[name=task-id]').val();
+
+    var data = new FormData();
+    data.append('task-id', id);
+
+    var url = $(this).attr('action');
+
+    ajaxQuery(url, data, function(res) {
+      var task = res['task'];
+
+      var newrow =
+        '<tr data-id="' + task['id'] + '"> \
+            <td class="three wide">' + task['name'] + '</td> \
+            <td class="three wide">' + categories[task['category']] + '</td> \
+            <td class="eight wide">' + task['desc'] + '</td> \
+            <td class="two wide center aligned"> \
+              <a href="#" class="task-add"><i class="large plus square icon"></i></a> \
+            </td> \
+          </tr>';
+
+      $('#comp-table-body').find('tr[data-id='+task['id']+']').remove();
+      $('#tasks-table-body').append(newrow);
+    });
+
+    $('.task-remove-modal').modal('hide');
+
+    return false;
+  });
+
+  $('#task-edit-form').submit(function(event) {
+    event.preventDefault();
+
+    var id = $(this).find('[name=task-id]').val();
+    var score = $(this).find('[name=task-score]').val();
+
+    var data = new FormData();
+    data.append('task-id', id);
+    data.append('task-score', score);
+
+    var url = $(this).attr('action');
+
+    ajaxQuery(url, data, function(res) {
+      var task = res['task'];
+
+      var newrow =
+        '<tr data-id="' + task['id'] + '"> \
+            <td class="three wide">' + task['name'] + '</td> \
+            <td class="three wide">' + categories[task['category']] + '</td> \
+            <td class="eight wide">' + task['desc'] + '</td> \
+            <td class="two wide center aligned"> \
+              <a href="#" class="task-edit"><i class="large edit icon"></i></a> \
+              <a href="#" class="task-remove"><i class="large minus square icon"></i></a> \
+            <a href="#" class="task-add"><i class="large plus square icon"></i></a> \
+            </td> \
+          </tr>';
+
+      $('#comp-table-body').find('tr[data-id='+task['id']+']').replaceWith(newrow);
+    });
+
+    $('.task-edit-modal').modal('hide');
+
+    return false;
   });
 
   $('#task-add-form').submit(function(event) {
@@ -347,13 +419,13 @@ $(function() {
             <td class="three wide">' + categories[task['category']] + '</td> \
             <td class="eight wide">' + task['desc'] + '</td> \
             <td class="two wide center aligned"> \
-              <a href="#" class="task-update"><i class="large edit icon"></i></a> \
+              <a href="#" class="task-edit"><i class="large edit icon"></i></a> \
               <a href="#" class="task-remove"><i class="large minus square icon"></i></a> \
             </td> \
           </tr>';
 
       $('#comp-table-body').append(newrow);
-      $('#tasks-table-body').find('tr[data-id='+id+']').remove();
+      $('#tasks-table-body').find('tr[data-id='+task['id']+']').remove();
     });
 
     $('.task-add-modal').modal('hide');
