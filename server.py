@@ -134,7 +134,7 @@ def _set_sqlite_pragma(dbapi_connection, connection_record):
 def login_page():
     user = get_user()
     if user:
-        return redirect('/')
+        return redirect('/competition/1')
 
     render = render_template('frame.html', lang=lang, page='login.html')
     return make_response(render)
@@ -190,7 +190,7 @@ def login():
         # Set up the user id for this session
         session_login(username)
 
-        return redirect('/competitions')
+        return redirect('/competition/1')
 
     return redirect('/error/invalid_credentials')
 

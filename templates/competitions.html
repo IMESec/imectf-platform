@@ -1,37 +1,44 @@
-<div class="landing-page container">
-  <table class="table table-striped">
+<div class="ui container main">
+  <h2 class="ui left floated inverted header">Competitions</h2>
+  <table class="ui single line selectable inverted fixed sortable unstackable table tasks-table">
     <thead>
-	<tr>
-		<th>#</th>
-		<th>Nome</th>
-		<th>Data</th>
-		<!--<th>Término</th>-->
-		{% if user["isAdmin"] == true %}
-			<th>
-				<a href="/addcompetition">Nova Lista</a>
-			</th>
-		{% else %}
-			<th> </th>
-		{% endif %}
+      <tr>
+        <th class="one wide center aligned">#</th>
+        <th>Nome</th>
+        <th>Data</th>
+        <!--<th>Término</th>-->
+        {% if user["isAdmin"] == true %}
+        <th class="two wide center aligned"></th>
+        {% else %}
+        <th></th>
+        {% endif %}
 
 
-	</tr>
+      </tr>
     </thead>
     <tbody>
       {% for competition in competitions  %}
       <tr>
-        <td>{{ loop.index }}</td>
+        <td class="one wide center aligned">{{ competition.id }}</td>
         <td>{{ competition.desc }}</td>
         <td>{{ competition.date_start }}</td>
         <!--<td>{{ competition.date_end }}</td>-->
-        <td>
-        	<a href="/competition/{{ competition.id }}">Acessar</a>
-        	<form action="/delete/{{ competition.id }}" method="POST">
-        		<input type="submit" value="Deletar"/>
-        	</form>
+        <td class="two wide center aligned">
+          <a href="/competition/{{ competition.id }}">
+            <button class="ui button">Acessar</button>
+          </a>
         </td>
       </tr>
       {% endfor %}
     </tbody>
+    <tfoot class="full-width">
+      <tr>
+        <th colspan="4">
+          <div class="ui right floated">
+            <button class="ui right floated small primary labeled icon button">
+              <i class="plus icon"></i>New competition
+            </button>
+        </th>
+    </tfoot>
   </table>
 </div>

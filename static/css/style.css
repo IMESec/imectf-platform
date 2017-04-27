@@ -159,16 +159,16 @@ body {
   background: #ddd;
 }
 
-.competition-content .problem {
+.competition-content .task {
   height: calc(100% - 125px);
   margin-bottom: 80px;
 }
 
-.competition-content .problem-header {
+.competition-content .task-header {
   margin-bottom: 1em;
 }
 
-.competition-content .problem-desc {
+.competition-content .task-desc {
   margin-bottom: 35px;
   height: calc(100% - 2.2em);
   overflow-y: auto;
@@ -204,7 +204,7 @@ body {
   }
 }
 
-/* problem explorer */
+/* task explorer */
 .ui.list {
   padding-top: 12px !important;
 }
@@ -236,18 +236,18 @@ body {
   background-color: rgba(255,255,255,0.2);
 }
 
-.problem .icon {
+.task-explorer .icon {
   width: 32px;
 }
 
-.problem .team-name .header {
+.task-explorer .team-name .header {
   max-width: 80px;
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
 }
 
-.problem .problem-name .header {
+.task-explorer .task-name .header {
   max-width: 90px;
   text-overflow: ellipsis;
   overflow: hidden;
@@ -255,24 +255,24 @@ body {
 }
 
 @media (min-width: 1127px) {
-  .problem .team-name .header {
+  .task-explorer .team-name .header {
     max-width: 100px;
   }
 
-  .problem .problem-name .header {
+  .task-explorer .task-name .header {
     max-width: 120px;
   }
 }
 
-/* problem explorer icon changer */
-/* file icon if problem not solved */
-/* flag icon if problem solved */
-a.problem > i.flag.icon,
-a.problem.accepted > i.file.icon {
+/* task explorer icon changer */
+/* file icon if task not solved */
+/* flag icon if task solved */
+a.task-explorer > i.flag.icon,
+a.task-explorer.accepted > i.file.icon {
   display: none !important;
 }
 
-a.problem.accepted > i.flag.icon {
+a.task-explorer.accepted > i.flag.icon {
   display: table-cell !important;
 }
 

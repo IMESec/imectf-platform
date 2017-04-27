@@ -8,7 +8,9 @@
       "login": "Login",
       "logged_as": "logged as",
       "logout": "Logout",
-      "view_on": "View on"
+      "view_on": "View on",
+      "competitions": "Competitions",
+      "tasks": "Tasks"
     },
     "login": {
       "login": "Login",

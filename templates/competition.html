@@ -19,7 +19,7 @@
 
           <div class="list accordion-content active">
 
-            <a class="item problem">
+            <a class="item task-explorer" href="/competition/{{ competition.id }}/edit">
               <i class="settings icon"></i>
 
               <div class="content">
@@ -27,13 +27,13 @@
               </div>
             </a>
 
-            <a class="item problem">
+            <!-- <a class="item task-explorer">
               <i class="rocket icon"></i>
 
               <div class="content">
                 <div class="header">Launch in 3...</div>
               </div>
-            </a>
+            </a> -->
 
           </div>
         </div>
@@ -54,7 +54,7 @@
 
           <div class="list accordion-content active">
 
-            <a class="item problem">
+            <a class="item task-explorer">
               <div class="right floated content team-name">
                 <div class="header">AAAAAAAAAAAAAAAAAAAAA</div>
               </div>
@@ -66,7 +66,7 @@
               </div>
             </a>
 
-            <a class="item problem">
+            <a class="item task-explorer">
               <i class="trophy icon"></i>
 
               <div class="content">
@@ -91,7 +91,7 @@
 
             {% for task in tasks if task.category == category.id %}
 
-            <a class="item problem">
+            <a class="item task-explorer task" data-id="{{ task.id }}">
               <div class="right floated content">
                 <div class="header">{{ "%+d"|format(task.score) }}</div>
               </div>
@@ -99,7 +99,7 @@
               <i class="file icon"></i>
               <i class="flag icon"></i>
 
-              <div class="content problem-name">
+              <div class="content task-name">
                 <div class="header">{{ task.name }}</div>
               </div>
             </a>
@@ -116,11 +116,11 @@
   </div>
   <div class="competition-wrapper">
     <div class="competition-content">
-      <div class="ui basic segment problem">
-        <div class="problem-header">
-          <h2 class="ui center aligned header">Problem</h2>
+      <div class="ui basic segment task">
+        <div class="task-header">
+          <h2 class="ui center aligned header">Task name</h2>
         </div>
-        <div class="problem-desc">
+        <div class="task-desc">
           <p>
           Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut non euismod neque. Aliquam congue tristique ipsum at laoreet. Morbi vel egestas ante. Nulla interdum vel nibh quis sollicitudin. Cras cursus lacus sit amet est cursus efficitur. Pellentesque et augue cursus, faucibus sem non, dictum arcu. Nulla efficitur est nec diam ultricies convallis. Nam bibendum nunc eu facilisis commodo. Suspendisse hendrerit diam ac mollis porta. Etiam tristique elit quam, vitae placerat tellus condimentum a.
           </p>
@@ -155,13 +155,18 @@
 </div>
 
 <script>
-$(".ui.accordion")
-  .accordion({
-    exclusive: false,
-    selector: {
-      trigger: '.accordion-title',
-      title: '.accordion-title',
-      content: '.accordion-content'
-    }
+$(function() {
+  $(".ui.accordion")
+    .accordion({
+      exclusive: false,
+      selector: {
+        trigger: '.accordion-title',
+        title: '.accordion-title',
+        content: '.accordion-content'
+      }
+    });
+
+  $(document).on('click', '.task', function() {
   });
+});
 </script>

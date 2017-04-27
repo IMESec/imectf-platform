@@ -26,6 +26,10 @@
     <div class="ui inverted top secondary pointing menu">
       <div class="ui container">
         <div class="header item"><a href="/">{{ lang.frame.title }}</a></div>
+        {% if user and user.isAdmin %}
+        <div class="item menu-item"><a href="/competitions">{{ lang.frame.competitions }}</a></div>
+        <div class="item menu-item"><a href="/tasks">{{ lang.frame.tasks }}</a></div>
+        {% endif %}
         <div class="right menu">
           {% if not user %}
           <div class="item menu-item"><a href="/login">{{ lang.frame.login }}</a></div>
