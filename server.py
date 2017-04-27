@@ -113,8 +113,7 @@ def error(msg):
 
     user = get_user()
 
-    render = render_template('frame.html', lang=lang, page='error.html',
-        message=message, user=user)
+    render = render_template('error.html', lang=lang, message=message, user=user)
     return make_response(render)
 
 def session_login(username):
@@ -136,7 +135,7 @@ def login_page():
     if user:
         return redirect('/competition/1')
 
-    render = render_template('frame.html', lang=lang, page='login.html')
+    render = render_template('login.html', lang=lang)
     return make_response(render)
 
 
@@ -217,7 +216,7 @@ def competition(comp_id):
     tasks = db.query("SELECT * FROM tasks t, task_competition tc WHERE t.id = tc.task_id AND tc.comp_id = :comp_id", comp_id=comp_id)
     tasks = list(tasks)
 
-    render = render_template('frame.html', lang=lang, page='competition.html',
+    render = render_template('competition.html', lang=lang,
                              user=user, competition=competition, categories=categories,
                              tasks=tasks)
     return make_response(render)
@@ -234,7 +233,7 @@ def competition_edit(comp_id):
     tasks = db.query("SELECT * FROM tasks WHERE id NOT IN (SELECT id FROM tasks t JOIN task_competition tc ON t.id = tc.task_id AND tc.comp_id = :comp_id)", comp_id=comp_id)
     tasks = list(tasks)
 
-    render = render_template('frame.html', lang=lang, page='competition-edit.html',
+    render = render_template('competition-edit.html', lang=lang,
                              user=get_user(), tasks_comp=tasks_comp, tasks=tasks, competition=competition, categories=categories)
     return make_response(render)
 
@@ -413,6 +412,21 @@ def addcompetitionsubmit():
         return redirect('/competitions')
 
 
+@app.route('/competitions')
+@login_required
+def competitions():
+    """Displays past competitions"""
+
+    user = get_user()
+    competitions = db.query('''select * from competitions''')
+
+    competitions = list(competitions)
+
+    # Render template
+    render = render_template('competitions.html', lang=lang,
+        user=user, competitions=competitions)
+    return make_response(render)
+
 
 
 
@@ -428,8 +442,8 @@ def tasks():
     tasks = list(tasks)
 
     user = get_user()
-    render = render_template('frame.html', lang=lang, user=user,
-            categories=categories, tasks=tasks, page='tasks.html')
+    render = render_template('tasks.html', lang=lang, user=user,
+            categories=categories, tasks=tasks)
     return make_response(render)
 
 
@@ -607,21 +621,6 @@ def scoreboard_json():
 
 
 
-@app.route('/competitions')
-@login_required
-def competitions():
-    """Displays past competitions"""
-
-    user = get_user()
-    competitions = db.query('''select * from competitions''')
-
-    competitions = list(competitions)
-    
-    # Render template
-    render = render_template('frame.html', lang=lang, page='competitions.html',
-        user=user, competitions=competitions)
-    return make_response(render)
-
 @app.route('/delete/<postID>', methods=['POST'])
 @login_required
 def deleteCompetitions(postID):
@@ -681,7 +680,7 @@ def index():
     user = get_user()
 
     # Render template
-    render = render_template('frame.html', lang=lang, page='main.html', user=user)
+    render = render_template('main.html', lang=lang, user=user)
     return make_response(render)
 
 """Initializes the database and sets up the language"""

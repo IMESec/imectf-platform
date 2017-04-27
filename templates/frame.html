@@ -2,12 +2,15 @@
 <html>
   <head>
     <meta charset="UTF-8">
-    <title>{{ lang.frame.title }}</title>
+    <title>{{ lang.frame.title }} {% block title %}{% endblock title %}</title>
     <!--<meta name="viewport" content="width=device-width" />-->
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/semantic.min.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
     <script src="{{ url_for('static', filename='js/jquery-3.2.1.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/semantic.min.js') }}"></script>
+
+    {% block scripts %}{% endblock scripts %}
+
     <script src="{{ url_for('static', filename='js/tablesort.js') }}"></script>
     <script src="{{ url_for('static', filename='js/general.js') }}"></script>
     <script>
@@ -22,6 +25,7 @@
     </script>
   </head>
   <body>
+    {% block menu %}
     <!-- Navigation Menu -->
     <div class="ui inverted top secondary pointing menu">
       <div class="ui container">
@@ -40,9 +44,10 @@
         </div>
       </div>
     </div>
+    {% endblock menu %}
 
     <!-- Page content -->
-    {% include page %}
+    {% block page %}{% endblock page %}
 
     <!-- Bottom menu -->
     <div class="ui inverted bottom secondary pointing menu">

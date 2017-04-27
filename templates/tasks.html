@@ -1,4 +1,6 @@
-<!-- Page content -->
+{% extends 'frame.html' %}
+
+{% block page %}
 <div class="ui container main">
   <h2 class="ui left floated inverted header">{{ lang.tasks.title }}</h2>
 
@@ -313,3 +315,5 @@ $(function() {
   });
 });
 </script>
+
+{% endblock page %}
