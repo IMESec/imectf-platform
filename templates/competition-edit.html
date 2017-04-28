@@ -1,5 +1,178 @@
 {% extends 'frame.html' %}
 
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/general.js') }}"></script>
+<script>
+var categories = {};
+{% for c in categories %} categories[{{ c.id }}] = "{{ c.name }}"; {% endfor %}
+function resetForm(form) {
+  form.find('input:text').val('')
+  form.find('.category-text').text('{{ lang.tasks.category_placeholder }}')
+  form.find('.category-text').addClass('default')
+}
+</script>
+<script>
+$(function() {
+  $('.task-new').on('click', function() {
+    resetForm($('.task-new-modal'));
+    $('.task-new-modal')
+      .modal({ onApprove: function() { return false; } })
+      .modal('show');
+  });
+
+  $(document).on('click', '.task-add', function() {
+    fetchTaskToForm('/task/' + $(this).closest('tr').data('id'), $('#task-add-form'),
+      function() {
+        $('.task-add-modal')
+          .modal({ onApprove: function() { return false; } })
+          .modal('show');
+      });
+  });
+
+  $(document).on('click', '.task-edit', function() {
+    fetchTaskToForm('/task_competition/{{ competition.id }}-' + $(this).closest('tr').data('id'), $('#task-edit-form'),
+      function() {
+        $('.task-edit-modal')
+          .modal({ onApprove: function() { return false; } })
+          .modal('show');
+      });
+  });
+
+  $(document).on('click', '.task-remove', function() {
+    fetchTaskToForm('/task/' + $(this).closest('tr').data('id'), $('#task-remove-form'),
+      function() {
+        $('.task-remove-modal')
+          .modal({ onApprove: function() { return false; } })
+          .modal('show');
+      });
+  });
+
+  $('#task-remove-form').submit(function(event) {
+    event.preventDefault();
+
+    var id = $(this).find('[name=task-id]').val();
+
+    var data = new FormData();
+    data.append('task-id', id);
+
+    var url = $(this).attr('action');
+
+    ajaxQuery(url, data, function(task) {
+      var newrow =
+        '<tr data-id="' + task['id'] + '"> \
+            <td class="three wide">' + task['name'] + '</td> \
+            <td class="three wide">' + categories[task['category']] + '</td> \
+            <td class="eight wide">' + task['desc'] + '</td> \
+            <td class="two wide center aligned"> \
+              <a href="#" class="task-add"><i class="large plus square icon"></i></a> \
+            </td> \
+          </tr>';
+
+      $('#comp-table-body').find('tr[data-id='+task['id']+']').remove();
+      $('#tasks-table-body').append(newrow);
+    });
+
+    $('.task-remove-modal').modal('hide');
+
+    return false;
+  });
+
+  $('#task-edit-form').submit(function(event) {
+    event.preventDefault();
+
+    var id = $(this).find('[name=task-id]').val();
+    var score = $(this).find('[name=task-score]').val();
+
+    var data = new FormData();
+    data.append('task-id', id);
+    data.append('task-score', score);
+
+    var url = $(this).attr('action');
+
+    ajaxQuery(url, data, function(task) {
+      var newrow =
+        '<tr data-id="' + task['id'] + '"> \
+            <td class="one wide">' + task['score'] + '</td> \
+            <td class="three wide">' + task['name'] + '</td> \
+            <td class="three wide">' + categories[task['category']] + '</td> \
+            <td class="eight wide">' + task['desc'] + '</td> \
+            <td class="two wide center aligned"> \
+              <a href="#" class="task-edit"><i class="large edit icon"></i></a> \
+              <a href="#" class="task-remove"><i class="large minus square icon"></i></a> \
+            </td> \
+          </tr>';
+
+      $('#comp-table-body').find('tr[data-id='+task['id']+']').replaceWith(newrow);
+    });
+
+    $('.task-edit-modal').modal('hide');
+
+    return false;
+  });
+
+  $('#task-add-form').submit(function(event) {
+    event.preventDefault();
+
+    var id = $(this).find('[name=task-id]').val();
+    var score = $(this).find('[name=task-score]').val();
+
+    var data = new FormData();
+    data.append('task-id', id);
+    data.append('task-score', score);
+
+    var url = $(this).attr('action');
+
+    ajaxQuery(url, data, function(task) {
+      console.log(JSON.stringify(task));
+      var newrow =
+        '<tr data-id="' + task['id'] + '"> \
+            <td class="one wide">' + task['score'] + '</td> \
+            <td class="three wide">' + task['name'] + '</td> \
+            <td class="three wide">' + categories[task['category']] + '</td> \
+            <td class="eight wide">' + task['desc'] + '</td> \
+            <td class="two wide center aligned"> \
+              <a href="#" class="task-edit"><i class="large edit icon"></i></a> \
+              <a href="#" class="task-remove"><i class="large minus square icon"></i></a> \
+            </td> \
+          </tr>';
+
+      $('#comp-table-body').append(newrow);
+      $('#tasks-table-body').find('tr[data-id='+task['id']+']').remove();
+    });
+
+    $('.task-add-modal').modal('hide');
+
+    return false;
+  });
+
+  $('#task-new-form').submit(function(event) {
+    event.preventDefault();
+
+    var data = new FormData($('#task-new-form')[0]);
+    var url = $(this).attr('action');
+
+    ajaxQuery(url, data, function(task) {
+      var newrow =
+        '<tr data-id="' + task['id'] + '"> \
+            <td class="three wide">' + task['name'] + '</td> \
+            <td class="three wide">' + categories[task['category']] + '</td> \
+            <td class="eight wide">' + task['desc'] + '</td> \
+            <td class="two wide center aligned"> \
+              <a href="#" class="task-add"><i class="large plus square icon"></i></a> \
+            </td> \
+          </tr>';
+
+      $('#tasks-table-body').append(newrow);
+    });
+
+    $('.task-new-modal').modal('hide');
+
+    return false;
+  });
+});
+</script>
+{% endblock scripts %}
+
 {% block page %}
 <div class="ui container main">
   <h2 class="ui inverted header">{{ competition.name }}</h2>
@@ -293,175 +466,4 @@
     </button>
   </div>
 </form>
-
-<script>
-$(function() {
-  $('.task-new').on('click', function() {
-    resetForm($('.task-new-modal'));
-    $('.task-new-modal')
-      .modal({ onApprove: function() { return false; } })
-      .modal('show');
-  });
-
-  $(document).on('click', '.task-add', function() {
-    $('.task-loading').addClass('active');
-    fetchTaskToForm('/task/' + $(this).closest('tr').data('id'), $('#task-add-form'));
-    $('.task-loading').removeClass('active');
-
-    $('.task-add-modal')
-      .modal({ onApprove: function() { return false; } })
-      .modal('show');
-  });
-
-  $(document).on('click', '.task-edit', function() {
-    $('.task-loading').addClass('active');
-    fetchTaskToForm('/task_competition/{{ competition.id }}-' + $(this).closest('tr').data('id'), $('#task-edit-form'));
-    $('.task-loading').removeClass('active');
-
-    $('.task-edit-modal')
-      .modal({ onApprove: function() { return false; } })
-      .modal('show');
-  });
-
-  $(document).on('click', '.task-remove', function() {
-    $('.task-loading').addClass('active');
-    fetchTaskToForm('/task/' + $(this).closest('tr').data('id'), $('#task-remove-form'));
-    $('.task-loading').removeClass('active');
-
-    $('.task-remove-modal')
-      .modal({ onApprove: function() { return false; } })
-      .modal('show');
-  });
-
-  $('#task-remove-form').submit(function(event) {
-    event.preventDefault();
-
-    var id = $(this).find('[name=task-id]').val();
-
-    var data = new FormData();
-    data.append('task-id', id);
-
-    var url = $(this).attr('action');
-
-    ajaxQuery(url, data, function(res) {
-      var task = res['task'];
-
-      var newrow =
-        '<tr data-id="' + task['id'] + '"> \
-            <td class="three wide">' + task['name'] + '</td> \
-            <td class="three wide">' + categories[task['category']] + '</td> \
-            <td class="eight wide">' + task['desc'] + '</td> \
-            <td class="two wide center aligned"> \
-              <a href="#" class="task-add"><i class="large plus square icon"></i></a> \
-            </td> \
-          </tr>';
-
-      $('#comp-table-body').find('tr[data-id='+task['id']+']').remove();
-      $('#tasks-table-body').append(newrow);
-    });
-
-    $('.task-remove-modal').modal('hide');
-
-    return false;
-  });
-
-  $('#task-edit-form').submit(function(event) {
-    event.preventDefault();
-
-    var id = $(this).find('[name=task-id]').val();
-    var score = $(this).find('[name=task-score]').val();
-
-    var data = new FormData();
-    data.append('task-id', id);
-    data.append('task-score', score);
-
-    var url = $(this).attr('action');
-
-    ajaxQuery(url, data, function(res) {
-      var task = res['task'];
-
-      var newrow =
-        '<tr data-id="' + task['id'] + '"> \
-            <td class="one wide">' + task['score'] + '</td> \
-            <td class="three wide">' + task['name'] + '</td> \
-            <td class="three wide">' + categories[task['category']] + '</td> \
-            <td class="eight wide">' + task['desc'] + '</td> \
-            <td class="two wide center aligned"> \
-              <a href="#" class="task-edit"><i class="large edit icon"></i></a> \
-              <a href="#" class="task-remove"><i class="large minus square icon"></i></a> \
-            </td> \
-          </tr>';
-
-      $('#comp-table-body').find('tr[data-id='+task['id']+']').replaceWith(newrow);
-    });
-
-    $('.task-edit-modal').modal('hide');
-
-    return false;
-  });
-
-  $('#task-add-form').submit(function(event) {
-    event.preventDefault();
-
-    var id = $(this).find('[name=task-id]').val();
-    var score = $(this).find('[name=task-score]').val();
-
-    var data = new FormData();
-    data.append('task-id', id);
-    data.append('task-score', score);
-
-    var url = $(this).attr('action');
-
-    ajaxQuery(url, data, function(res) {
-      var task = res['task'];
-
-      var newrow =
-        '<tr data-id="' + task['id'] + '"> \
-            <td class="one wide">' + task['score'] + '</td> \
-            <td class="three wide">' + task['name'] + '</td> \
-            <td class="three wide">' + categories[task['category']] + '</td> \
-            <td class="eight wide">' + task['desc'] + '</td> \
-            <td class="two wide center aligned"> \
-              <a href="#" class="task-edit"><i class="large edit icon"></i></a> \
-              <a href="#" class="task-remove"><i class="large minus square icon"></i></a> \
-            </td> \
-          </tr>';
-
-      $('#comp-table-body').append(newrow);
-      $('#tasks-table-body').find('tr[data-id='+task['id']+']').remove();
-    });
-
-    $('.task-add-modal').modal('hide');
-
-    return false;
-  });
-
-  $('#task-new-form').submit(function(event) {
-    event.preventDefault();
-
-    var data = new FormData($('#task-new-form')[0]);
-    var url = $(this).attr('action');
-
-    ajaxQuery(url, data, function(res) {
-      var task = res['task'];
-
-      var newrow =
-        '<tr data-id="' + task['id'] + '"> \
-            <td class="three wide">' + task['name'] + '</td> \
-            <td class="three wide">' + categories[task['category']] + '</td> \
-            <td class="eight wide">' + task['desc'] + '</td> \
-            <td class="two wide center aligned"> \
-              <a href="#" class="task-add"><i class="large plus square icon"></i></a> \
-            </td> \
-          </tr>';
-
-      $('#tasks-table-body').append(newrow);
-    });
-
-    $('.task-new-modal').modal('hide');
-
-    return false;
-  });
-});
-</script>
 {% endblock page %}

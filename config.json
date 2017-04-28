@@ -1,15 +1,15 @@
 {
     "secret_key": "imepprules",
-    
+
     "host": "0.0.0.0",
     "port": 4444,
 
     "isProxied": false,
 
     "db": "sqlite:///ctf.db",
-    
+
     "language_file": "lang.json",
-    "language": "portugues",
+    "language": "en",
 
     "debug": true
 }

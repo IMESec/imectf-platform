@@ -19,6 +19,7 @@ from sqlalchemy import event
 from sqlalchemy.engine import Engine
 from sqlite3 import Connection as SQLite3Connection
 from werkzeug.contrib.fixers import ProxyFix
+from werkzeug.utils import secure_filename
 
 from flask import Flask
 from flask import jsonify
@@ -193,9 +194,24 @@ def login():
 
     return redirect('/error/invalid_credentials')
 
-@app.route('/competition/<comp_id>/')
+
+@app.route('/competitions')
 @login_required
-def competition(comp_id):
+def competitions():
+    """Displays past competitions"""
+
+    user = get_user()
+    competitions = db.query('''select * from competitions''')
+
+    competitions = list(competitions)
+
+    # Render template
+    render = render_template('competitions.html', lang=lang,
+        user=user, competitions=competitions)
+    return make_response(render)
+
+
+def competition_page(comp_id, page, **kwargs):
     user = get_user()
 
     competition = db['competitions'].find_one(id=comp_id)
@@ -218,8 +234,15 @@ def competition(comp_id):
 
     render = render_template('competition.html', lang=lang,
                              user=user, competition=competition, categories=categories,
-                             tasks=tasks)
+                             tasks=tasks, page=page, **kwargs)
     return make_response(render)
+
+
+@app.route('/competition/<comp_id>/')
+@login_required
+def competition(comp_id):
+    return competition_page(comp_id, None)
+
 
 @app.route('/competition/<comp_id>/edit', methods=['GET'])
 @admin_required
@@ -237,6 +260,7 @@ def competition_edit(comp_id):
                              user=get_user(), tasks_comp=tasks_comp, tasks=tasks, competition=competition, categories=categories)
     return make_response(render)
 
+
 @app.route('/competition/<comp_id>/addtask', methods=['POST'])
 @admin_required
 def competition_add_task(comp_id):
@@ -245,10 +269,10 @@ def competition_add_task(comp_id):
         task_id = int(request.form['task-id']);
         score = int(request.form['task-score']);
     except KeyError:
-        return jsonify({"status": "ERROR", "message": "Internal error!"});
+        return jsonify({'message': 'Internal error!'}), 400
     else:
         if not db['tasks'].find_one(id=task_id) or not db['competitions'].find_one(id=comp_id):
-            return jsonify({"status": "ERROR", "message": "Invalid task or competition!"});
+            return jsonify({'message': 'Invalid task or competition!'}), 400
 
         task_competition = db['task_competition']
         entry = dict(task_id=task_id, comp_id=comp_id, score=score)
@@ -257,7 +281,7 @@ def competition_add_task(comp_id):
 
         task = list(db.query("SELECT * FROM tasks t JOIN task_competition tc ON t.id = :task_id AND tc.task_id = :task_id AND tc.comp_id = :comp_id LIMIT 1",
                         task_id = task_id, comp_id = comp_id))
-        return jsonify({"status": "OK", "task" : task[0]})
+        return jsonify(task[0]), 200
 
 
 @app.route('/competition/<comp_id>/edittask', methods=['POST'])
@@ -268,19 +292,19 @@ def competition_edit_task(comp_id):
         task_id = int(request.form['task-id']);
         score = int(request.form['task-score']);
     except KeyError:
-        return jsonify({"status": "ERROR", "message": "Internal error!"});
+        return jsonify({'message': 'Internal error!'}), 400
     else:
         task_competition = db['task_competition']
         entry = task_competition.find_one(task_id = task_id, comp_id = comp_id)
         if not entry:
-            return jsonify({"status": "ERROR", "message": "Not found"});
+            return jsonify({'message': 'Not found'}), 400
 
         entry['score'] = score
         task_competition.update(entry, ['task_id', 'comp_id'])
 
         task = list(db.query("SELECT * FROM tasks t JOIN task_competition tc ON t.id = :task_id AND tc.task_id = :task_id AND tc.comp_id = :comp_id LIMIT 1",
                         task_id = task_id, comp_id = comp_id))
-        return jsonify({"status": "OK", "task" : task[0]})
+        return jsonify(task[0]), 200
 
 
 @app.route('/competition/<comp_id>/removetask', methods=['POST'])
@@ -290,15 +314,29 @@ def competition_remove_task(comp_id):
         comp_id = int(comp_id)
         task_id = int(request.form['task-id']);
     except KeyError:
-        return jsonify({"status": "ERROR", "message": "Internal error!"});
+        return jsonify({'message': "Internal error!"}), 400
     else:
         db['task_competition'].delete(task_id = task_id, comp_id = comp_id)
         task = db['tasks'].find_one(id = task_id)
-        return jsonify({"status": "OK", "task" : task})
+        return jsonify(task), 200
 
 
+@app.route('/competition/<comp_id>/task/<task_id>', methods=['GET'])
+@login_required
+def competition_task(comp_id, task_id):
+    print 'get'
+    task = db['tasks'].find_one(id=task_id)
+    print task
+    return competition_page(comp_id, 'competition-task.html', task=task)
 
 
+@app.route('/competition/<comp_id>/task/<task_id>', methods=['POST'])
+@login_required
+def competition_task_post(comp_id, task_id):
+    print 'post'
+    task = db['tasks'].find_one(id=task_id)
+    render = render_template('competition-task.html', lang=lang, task=task)
+    return render, 200
 
 
 
@@ -412,24 +450,21 @@ def addcompetitionsubmit():
         return redirect('/competitions')
 
 
-@app.route('/competitions')
-@login_required
-def competitions():
-    """Displays past competitions"""
-
-    user = get_user()
-    competitions = db.query('''select * from competitions''')
-
-    competitions = list(competitions)
-
-    # Render template
-    render = render_template('competitions.html', lang=lang,
-        user=user, competitions=competitions)
-    return make_response(render)
 
 
 
 
+
+def store_filename(file):
+    filename, ext = os.path.splitext(file.filename)
+    #hash current time for file name
+    filename = secure_filename(filename) + '_' + hashlib.md5(str(datetime.datetime.utcnow())).hexdigest()
+    #if upload has extension, append to filename
+    if ext:
+        filename = filename + ext
+
+    file.save(os.path.join("static/files/", filename))
+    return filename
 
 
 
@@ -457,9 +492,9 @@ def task_add():
         hint = request.form['task-hint']
         flag = request.form['task-flag']
         if not flag:
-            return jsonify({'status': 'ERROR', 'message': 'No flag set'})
+            return jsonify({'message': 'No flag set'}), 400
     except KeyError:
-        return jsonify({'status': 'ERROR', 'message': 'Form incorrect filled'})
+        return jsonify({'message': 'Form incorrect filled'}), 400
     else:
         tasks = db['tasks']
         task = dict(
@@ -471,19 +506,12 @@ def task_add():
         file = request.files['task-file']
 
         if file:
-            filename, ext = os.path.splitext(file.filename)
-            #hash current time for file name
-            filename = hashlib.md5(str(datetime.datetime.utcnow())).hexdigest()
-            #if upload has extension, append to filename
-            if ext:
-                filename = filename + ext
-            file.save(os.path.join("static/files/", filename))
-            task["file"] = filename
+            task["file"] = store_filename(file)
 
         tasks.insert(task)
 
         task = tasks.find_one(name = task["name"], flag = task["flag"])
-        return jsonify({"status": "OK", "task" : task})
+        return jsonify(task), 200
 
 
 @app.route('/task/edit', methods=['POST'])
@@ -498,9 +526,9 @@ def task_edit():
         hint = request.form['task-hint']
         flag = request.form['task-flag']
         if not flag:
-            return jsonify({'status': 'ERROR', 'message': 'No flag set'})
+            return jsonify({ 'message': 'No flag set' }), 400
     except KeyError:
-        return jsonify({'status': 'ERROR', 'message': 'Form incorrect filled'})
+        return jsonify({ 'message': 'Form incorrect filled' }), 400
     else:
         tasks = db['tasks']
         task = tasks.find_one(id=tid)
@@ -513,13 +541,7 @@ def task_edit():
         file = request.files['task-file']
 
         if file:
-            filename, ext = os.path.splitext(file.filename)
-            #hash current time for file name
-            filename = hashlib.md5(str(datetime.datetime.utcnow())).hexdigest()
-            #if upload has extension, append to filename
-            if ext:
-                filename = filename + ext
-            file.save(os.path.join("static/files/", filename))
+            filename = store_filename(file)
 
             #remove old file
             if task['file']:
@@ -529,24 +551,33 @@ def task_edit():
 
         tasks.update(task, ['id'])
         task = tasks.find_one(name = task["name"], flag = task["flag"])
-        return jsonify({"status": "OK", "task" : task})
+        return jsonify(task)
 
 
 @app.route('/task/delete', methods=['POST'])
 @admin_required
 def task_delete():
-    # TODO: Delete file if any
-    db['tasks'].delete(id=request.form['task-id'])
-    return jsonify({"status": "OK"})
+    task_id = int(request.form['task-id'])
+
+    task = db['tasks'].find_one(id=task_id)
+
+    if task is None:
+        return jsonify({ 'message': 'Task not found!' }), 400
+
+    if task['file']:
+        os.remove(os.path.join("static/files/", task['file']))
+    db['tasks'].delete(id=task_id)
+    return jsonify({}), 200
 
 
-@app.route('/task/<tid>', methods=['GET', 'POST'])
+@app.route('/task/<task_id>', methods=['GET', 'POST'])
 @admin_required
-def task_get(tid):
-    task = db["tasks"].find_one(id=tid)
+def task_get(task_id):
+    task = db["tasks"].find_one(id=task_id)
     if not task:
-        return jsonify({ 'status': 'ERROR', 'message': 'Not found' })
+        return jsonify({ 'message': 'Not found' }), 400
     return jsonify(task)
+
 
 @app.route('/task_competition/<cid>-<tid>', methods=['GET', 'POST'])
 @admin_required
@@ -554,8 +585,8 @@ def task_competition_get(cid, tid):
     task = list(db.query('SELECT * FROM tasks t JOIN task_competition tc ON t.id = tc.task_id AND t.id = :task_id AND tc.comp_id = :comp_id LIMIT 1',
                          task_id = tid, comp_id = cid));
     if len(task) == 0:
-        return jsonify({ 'status': 'ERROR', 'message': 'Not found' })
-    return jsonify(task[0])
+        return jsonify({ 'message': 'Not found' }), 400
+    return jsonify(task[0]), 200
 
 
 
@@ -707,4 +738,4 @@ if config['isProxied']:
 if __name__ == '__main__':
     # Start web server
     app.run(host=config['host'], port=config['port'],
-        debug=config['debug'], threaded=True)
+        debug=config['debug'], threaded=True, extra_files=['config.json', config['language_file']])

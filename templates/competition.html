@@ -1,5 +1,34 @@
 {% extends 'frame.html' %}
 
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/general.js') }}"></script>
+<script>
+$(function() {
+  $(".ui.accordion").accordion({
+    exclusive: false,
+    selector: {
+      trigger: '.accordion-title',
+      title: '.accordion-title',
+      content: '.accordion-content'
+    }
+  });
+
+  window.onpopstate = function(event) {
+    $('.competition-content').html(event.state);
+  }
+
+  $(document).on('click', '.content-load', function(e) {
+    e.preventDefault();
+    var url = $(this).attr('href');
+    ajaxQuery(url, {}, function(res) {
+      window.history.pushState(res, "task", url);
+      $('.competition-content').html(res);
+    });
+  });
+});
+</script>
+{% endblock scripts %}
+
 {% block page %}
 <div class="ui main competition">
   <div class="competition-list">
@@ -15,7 +44,7 @@
           <a class="accordion-title active">
             <i class="spy open icon"></i>
             <div class="content">
-              <div class="header">Admin</div>
+              <div class="header">{{ lang.competition.admin }}</div>
             </div>
           </a>
 
@@ -26,7 +55,7 @@
               <i class="settings icon"></i>
 
               <div class="content">
-                <div class="header">Edit Competition</div>
+                <div class="header">{{ lang.competition.settings }}</div>
               </div>
             </a>
 
@@ -34,7 +63,7 @@
               <i class="rocket icon"></i>
 
               <div class="content">
-                <div class="header">Launch in 3...</div>
+              <div class="header">{{ lang.competition.deploy }}</div>
               </div>
             </a> -->
 
@@ -44,36 +73,39 @@
 
         <div class="item ui">
           <div class="right floated content score">
-            <div class="header">3265 pts / 131th</div>
+            <div class="header">3265 / 6000 pts</div>
           </div>
 
           <a class="accordion-title active">
             <i class="folder open icon"></i>
             <div class="content">
-              <div class="header">Competition</div>
+              <div class="header">{{ lang.competition.competition }}</div>
             </div>
           </a>
 
 
           <div class="list accordion-content active">
 
-            <a class="item task-explorer">
+            <a class="item task-explorer content-load">
               <div class="right floated content team-name">
-                <div class="header">AAAAAAAAAAAAAAAAAAAAA</div>
+                <div class="header">TODO</div>
               </div>
 
               <i class="users icon"></i>
 
               <div class="content">
-                <div class="header">Team</div>
+                <div class="header">{{ lang.competition.team }}</div>
               </div>
             </a>
 
-            <a class="item task-explorer">
+            <a class="item task-explorer content-load">
+              <div class="right floated content team-name">
+                <div class="header">131th / 1000</div>
+              </div>
               <i class="trophy icon"></i>
 
               <div class="content">
-                <div class="header">Leaderboard</div>
+                <div class="header">{{ lang.competition.leaderboard }}</div>
               </div>
             </a>
 
@@ -94,9 +126,9 @@
 
             {% for task in tasks if task.category == category.id %}
 
-            <a class="item task-explorer task" data-id="{{ task.id }}">
+            <a class="item task-explorer content-load" href="/competition/{{ competition.id }}/task/{{ task.id }}">
               <div class="right floated content">
-                <div class="header">{{ "%+d"|format(task.score) }}</div>
+                <div class="header">{{ "%+d" | format(task.score) }}</div>
               </div>
 
               <i class="file icon"></i>
@@ -119,58 +151,10 @@
   </div>
   <div class="competition-wrapper">
     <div class="competition-content">
-      <div class="ui basic segment task">
-        <div class="task-header">
-          <h2 class="ui center aligned header">Task name</h2>
-        </div>
-        <div class="task-desc">
-          <p>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut non euismod neque. Aliquam congue tristique ipsum at laoreet. Morbi vel egestas ante. Nulla interdum vel nibh quis sollicitudin. Cras cursus lacus sit amet est cursus efficitur. Pellentesque et augue cursus, faucibus sem non, dictum arcu. Nulla efficitur est nec diam ultricies convallis. Nam bibendum nunc eu facilisis commodo. Suspendisse hendrerit diam ac mollis porta. Etiam tristique elit quam, vitae placerat tellus condimentum a.
-          </p>
-          <p>
-          In pretium nunc ut sapien aliquam consectetur. Curabitur a ipsum non tortor tincidunt cursus. Quisque et iaculis libero, in laoreet neque. Quisque accumsan purus at est dictum, id ultrices massa interdum. Curabitur vitae arcu nec lectus malesuada ullamcorper quis non enim. Fusce porta ipsum non iaculis consequat. Fusce sit amet augue eleifend, ullamcorper est nec, placerat neque. Ut erat augue, posuere at orci ut, accumsan efficitur nunc. Praesent et nisl magna. Praesent aliquet nisi ex, a aliquet lorem tincidunt sit amet. Etiam at tortor ut massa fringilla dignissim quis non ante. Praesent tincidunt vulputate commodo. Integer consequat augue sed faucibus fermentum.
-          </p>
-          <p>
-          In pretium nunc ut sapien aliquam consectetur. Curabitur a ipsum non tortor tincidunt cursus. Quisque et iaculis libero, in laoreet neque. Quisque accumsan purus at est dictum, id ultrices massa interdum. Curabitur vitae arcu nec lectus malesuada ullamcorper quis non enim. Fusce porta ipsum non iaculis consequat. Fusce sit amet augue eleifend, ullamcorper est nec, placerat neque. Ut erat augue, posuere at orci ut, accumsan efficitur nunc. Praesent et nisl magna. Praesent aliquet nisi ex, a aliquet lorem tincidunt sit amet. Etiam at tortor ut massa fringilla dignissim quis non ante. Praesent tincidunt vulputate commodo. Integer consequat augue sed faucibus fermentum.
-          </p>
-        </div>
-      </div>
-      <div class="input-flag">
-        <span><strong>File:</strong> <a href="#">file</a></span>
-
-        <div class="ui horizontal divider">
-          Submit
-        </div>
-        <div class="ui fluid action left corner labeled input">
-          <input type="text" placeholder="Insert flag">
-          <button class="ui icon basic button">
-            <i class="send icon"></i>
-          </button>
-          <div class="ui left corner label">
-            <i class="flag icon"></i>
-          </div>
-        </div>
-      </div>
+      {% include page ignore missing %}
     </div>
     <div class="competition-shell">
     </div>
   </div>
 </div>
-
-<script>
-$(function() {
-  $(".ui.accordion")
-    .accordion({
-      exclusive: false,
-      selector: {
-        trigger: '.accordion-title',
-        title: '.accordion-title',
-        content: '.accordion-content'
-      }
-    });
-
-  $(document).on('click', '.task', function() {
-  });
-});
-</script>
 {% endblock page %}

@@ -1,5 +1,5 @@
 {
-  "portugues": {
+  "en": {
     "general": {
       "loading": "Loading..."
     },
@@ -61,7 +61,17 @@
       "add_accept": "Add to Competition",
       "edit": "Edit task on Competition",
       "edit_cancel": "Discard",
-      "edit_accept": "Update"
+      "edit_accept": "Update",
+
+      "admin": "Admin",
+      "settings": "Settings",
+      "deploy": "Launch in 3...",
+      "competition": "Competition",
+      "team": "Team",
+      "leaderboard": "Leaderboard",
+      "file": "File",
+      "submit": "Submit",
+      "submit_placeholder": "Insert flag"
     },
 
 

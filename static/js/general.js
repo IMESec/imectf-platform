@@ -7,6 +7,10 @@ $(function() {
   $('.ui.dropdown').dropdown()
   $('.checkbox').checkbox('attach events', '.check.button', 'check');
 
+  var dimmerSettings = { duration: { show: 100, hide: 100 }, inverted: true, useCSS: false };
+  $('.ui.dimmer').dimmer(dimmerSettings);
+  $('.ui.modal').modal({ dimmerSettings: dimmerSettings });
+
 
   /*****************/
   /* File Selector */
@@ -33,7 +37,6 @@ $(function() {
     $(this).parent().next('._attachmentName').val(label);
   });
 
-
   /*****************/
   /* Ajax Queries  */
   /*****************/
@@ -45,24 +48,29 @@ $(function() {
   });
 
   ajaxQuery = function(url, data, callback) {
+    $('.task-loading').dimmer('show');
     $.ajax({
       url: url,
       data: data,
       success: function(res) {
-        if (res['status'] === 'OK') {
           if (callback)
             callback(res);
-        } else {
-          console.log(res['message']);
-        }
+
+          $('.task-loading').dimmer('hide');
+      },
+      error: function() {
+        console.log('error');
       }
     });
   };
 
-  fetchTaskToForm = function(url, form) {
+  fetchTaskToForm = function(url, form, callback) {
+    $('.task-loading').dimmer('show');
     $.ajax({
       url: url,
       success: function(res) {
+
+        // TODO change server to return status and task, not only task
         $.each(res, function(name, v) {
           var elem = form.find('[name=task-'+name+']');
           if (elem.length > 0 && elem.attr('type') != "file")
@@ -70,9 +78,14 @@ $(function() {
         });
 
         form.find('.task-category-dropdown').dropdown('set selected', res['category']);
+
+        $('.task-loading').dimmer('hide');
+
+        if (callback)
+          callback();
       },
       error: function() {
-        console.log("error");
+        console.log('error');
       }
     });
   };
