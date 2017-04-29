@@ -38,6 +38,24 @@ $(function() {
   });
 
   /*****************/
+  /*   Utilities   */
+  /*****************/
+  var tagsToReplace = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;'
+  };
+
+  function replaceTag(tag) {
+    return tagsToReplace[tag] || tag;
+  }
+
+  escapeHtml = function(str) {
+    return str.replace(/[&<>]/g, replaceTag);
+  }
+
+
+  /*****************/
   /* Ajax Queries  */
   /*****************/
   $.ajaxSetup({
@@ -49,27 +67,23 @@ $(function() {
 
   ajaxQuery = function(url, data, callback) {
     $('.task-loading').dimmer('show');
-    $.ajax({
-      url: url,
-      data: data,
-      success: function(res) {
-          if (callback)
-            callback(res);
-
-          $('.task-loading').dimmer('hide');
-      },
-      error: function() {
+    $.ajax({ url: url, data: data })
+      .always(function() { $('.task-loading').dimmer('hide'); })
+      .done(function(res) {
+        if (callback)
+          callback(res);
+      })
+      .fail(function() {
+        $('.task-loading').dimmer('hide');
         console.log('error');
-      }
-    });
+      });
   };
 
   fetchTaskToForm = function(url, form, callback) {
     $('.task-loading').dimmer('show');
-    $.ajax({
-      url: url,
-      success: function(res) {
-
+    $.ajax({ url: url })
+      .always(function() { $('.task-loading').dimmer('hide'); })
+      .done(function(res) {
         // TODO change server to return status and task, not only task
         $.each(res, function(name, v) {
           var elem = form.find('[name=task-'+name+']');
@@ -79,14 +93,11 @@ $(function() {
 
         form.find('.task-category-dropdown').dropdown('set selected', res['category']);
 
-        $('.task-loading').dimmer('hide');
-
         if (callback)
           callback();
-      },
-      error: function() {
+      })
+      .fail(function() {
         console.log('error');
-      }
-    });
+      });
   };
 });

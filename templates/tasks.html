@@ -49,7 +49,7 @@ $(function() {
         '<tr data-id="' + task['id'] + '"> \
             <td class="three wide">' + task['name'] + '</td> \
             <td class="three wide">' + categories[task['category']] + '</td> \
-            <td class="eight wide">' + task['desc'] + '</td> \
+            <td class="eight wide">' + escapeHtml(task['desc']) + '</td> \
             <td class="two wide center aligned"> \
               <a href="#" class="task-edit"><i class="large edit icon"></i></a> \
               <a href="#" class="task-delete"><i class="large trash icon"></i></a> \
@@ -74,7 +74,7 @@ $(function() {
       '<tr data-id="' + task['id'] + '"> \
         <td class="three wide">' + task['name'] + '</td> \
         <td class="three wide">' + categories[task['category']] + '</td> \
-        <td class="eight wide">' + task['desc'] + '</td> \
+        <td class="eight wide">' + escapeHtml(task['desc']) + '</td> \
         <td class="two wide center aligned"> \
           <a href="#" class="task-edit"><i class="large edit icon"></i></a> \
           <a href="#" class="task-delete"><i class="large trash icon"></i></a> \

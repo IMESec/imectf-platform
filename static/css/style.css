@@ -99,6 +99,7 @@ body {
 /* Contest */
 
 .competition {
+  flex: 1;
   display: table;
   width: 100%;
   height: 100%;
@@ -126,27 +127,9 @@ body {
 }
 
 .competition-wrapper {
-  display: table-cell;
-  width: 80%;
+  display: flex;
+  flex-direction: row;
   height: 100%;
-  overflow: hidden;
-  vertical-align: top;
-}
-
-@media (max-width: 723px) {
-  .competition-list {
-    display: table;
-    width: 100%;
-    height: auto;
-    border-right: none;
-    border-bottom: 2px #111 solid;
-  }
-
-  .competition-wrapper {
-    display: table;
-    width: 100%;
-    height: auto;
-  }
 }
 
 .competition-content {
@@ -157,11 +140,18 @@ body {
   height: 100%;
   margin: 0 !important;
   background: #ddd;
+  overflow: auto;
+}
+
+.competition-task {
+  height: 100%;
+  width: 100%;
 }
 
 .competition-content .task {
-  height: calc(100% - 125px);
-  margin-bottom: 80px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .competition-content .task-header {
@@ -169,16 +159,10 @@ body {
 }
 
 .competition-content .task-desc {
-  margin-bottom: 35px;
-  height: calc(100% - 2.2em);
-  overflow-y: auto;
+  flex-grow: 1;
 }
 
 .competition-content .input-flag {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
   padding: 12px;
 }
 
@@ -191,6 +175,21 @@ body {
   background: #222;
 }
 
+/* Small monitor */
+@media (max-width: 723px) {
+  .competition-list {
+    display: table;
+    width: 100%;
+    height: auto;
+    border-right: none;
+    border-bottom: 2px #111 solid;
+  }
+
+  .competition-wrapper {
+    height: auto;
+  }
+}
+
 /* Small and Medium monitor: content atop shell */
 @media (max-width: 1127px) {
   .competition-content {
@@ -201,6 +200,10 @@ body {
   .competition-shell {
     height: 50%;
     width: 100%;
+  }
+
+  .competition-wrapper {
+    flex-direction: column;
   }
 }
 

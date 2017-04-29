@@ -23,6 +23,7 @@ $(function() {
   $(document).on('click', '.task-add', function() {
     fetchTaskToForm('/task/' + $(this).closest('tr').data('id'), $('#task-add-form'),
       function() {
+        console.log('modal');
         $('.task-add-modal')
           .modal({ onApprove: function() { return false; } })
           .modal('show');
@@ -62,7 +63,7 @@ $(function() {
         '<tr data-id="' + task['id'] + '"> \
             <td class="three wide">' + task['name'] + '</td> \
             <td class="three wide">' + categories[task['category']] + '</td> \
-            <td class="eight wide">' + task['desc'] + '</td> \
+            <td class="eight wide">' + escapeHtml(task['desc']) + '</td> \
             <td class="two wide center aligned"> \
               <a href="#" class="task-add"><i class="large plus square icon"></i></a> \
             </td> \
@@ -95,7 +96,7 @@ $(function() {
             <td class="one wide">' + task['score'] + '</td> \
             <td class="three wide">' + task['name'] + '</td> \
             <td class="three wide">' + categories[task['category']] + '</td> \
-            <td class="eight wide">' + task['desc'] + '</td> \
+            <td class="eight wide">' + escapeHtml(task['desc']) + '</td> \
             <td class="two wide center aligned"> \
               <a href="#" class="task-edit"><i class="large edit icon"></i></a> \
               <a href="#" class="task-remove"><i class="large minus square icon"></i></a> \
@@ -129,7 +130,7 @@ $(function() {
             <td class="one wide">' + task['score'] + '</td> \
             <td class="three wide">' + task['name'] + '</td> \
             <td class="three wide">' + categories[task['category']] + '</td> \
-            <td class="eight wide">' + task['desc'] + '</td> \
+            <td class="eight wide">' + escapeHtml(task['desc']) + '</td> \
             <td class="two wide center aligned"> \
               <a href="#" class="task-edit"><i class="large edit icon"></i></a> \
               <a href="#" class="task-remove"><i class="large minus square icon"></i></a> \
@@ -156,7 +157,7 @@ $(function() {
         '<tr data-id="' + task['id'] + '"> \
             <td class="three wide">' + task['name'] + '</td> \
             <td class="three wide">' + categories[task['category']] + '</td> \
-            <td class="eight wide">' + task['desc'] + '</td> \
+            <td class="eight wide">' + escapeHtml(task['desc']) + '</td> \
             <td class="two wide center aligned"> \
               <a href="#" class="task-add"><i class="large plus square icon"></i></a> \
             </td> \
