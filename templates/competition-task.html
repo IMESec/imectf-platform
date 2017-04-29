@@ -9,22 +9,33 @@
       {% endautoescape %}
     </div>
     <div class="input-flag">
-      {% if task.file %}
-      <span><strong>{{ lang.competition.file }}:</strong> <a href="{{ url_for('static', filename='files/' + task.file) }}">{{ task.file }}</a></span>
-      {% endif %}
-
-      <div class="ui horizontal divider">
-        {{ lang.competition.submit }}
-      </div>
-      <div class="ui fluid action left corner labeled input">
-        <input type="text" placeholder="{{ lang.competition.submit_placeholder }}">
-        <button class="ui icon basic button">
-          <i class="send icon"></i>
-        </button>
-        <div class="ui left corner label">
-          <i class="flag icon"></i>
+      {% if task.hint %}
+      <div class="ui fluid accordion task-hint">
+        <div class="title">
+          Hint
+          <i class="dropdown icon"></i>
         </div>
+        <div class="content">
+          {{ task.hint }}
+        </div>
+      </div>
+      {% endif %}
+    {% if task.file %}
+    <span><strong>{{ lang.competition.file }}:</strong> <a href="{{ url_for('static', filename='files/' + task.file) }}">{{ task.file }}</a></span>
+    {% endif %}
+
+    <div class="ui horizontal divider">
+      {{ lang.competition.submit }}
+    </div>
+    <div class="ui fluid action left corner labeled input">
+      <input type="text" placeholder="{{ lang.competition.submit_placeholder }}">
+      <button class="ui icon basic button">
+        <i class="send icon"></i>
+      </button>
+      <div class="ui left corner label">
+        <i class="flag icon"></i>
       </div>
     </div>
   </div>
+</div>
 </div>

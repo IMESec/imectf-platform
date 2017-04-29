@@ -156,6 +156,15 @@ body {
   padding: 12px;
 }
 
+.task-hint > .content {
+  padding-top: 0 !important;
+  padding-bottom: 12px !important;
+}
+
+.competition-content .input-flag input.accepted {
+  background-color: rgb(192, 255, 192, 1);
+}
+
 .competition-shell {
   position: relative;
   float: left;
