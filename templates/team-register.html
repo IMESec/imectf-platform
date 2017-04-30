@@ -1,0 +1,44 @@
+{% extends 'frame.html' %}
+
+{% block page %}
+  <div class="ui container main competition">
+    <div class="ui middle aligned center aligned grid full">
+      <div class="column team-register-form">
+        <form class="ui large form" method="post">
+          <div class="ui stacked segment">
+            <h2 class="ui header">{{ lang.competition_register.header }}</h2>
+            <div class="field">
+              <label>{{ lang.competition_register.secret }}
+                <div class="ui right corner labeled input">
+                  <div class="ui right corner label"><i class="key icon"></i></div>
+                  <input type="text" name="secret" placeholder="{{ lang.competition_register.secret_placeholder }}" required>
+                </div>
+            </div>
+            <div class="ui two column relaxed grid">
+              <div class="column">
+                <div class="field">
+                  <label>{{ lang.competition_register.team_name }}
+                    <div class="ui right corner labeled input">
+                      <div class="ui right corner label"><i class="users icon"></i></div>
+                      <input type="text" name="team-name" placeholder="{{ lang.competition_register.team_name_placeholder }}">
+                    </div>
+                </div>
+                <button type="submit" name="register-button" class="ui fluid primary button">{{ lang.competition_register.register }}</button>
+              </div>
+              <div class="column">
+                <div class="field">
+                  <label>{{ lang.competition_register.team_secret }}
+                    <div class="ui right corner labeled input">
+                      <div class="ui right corner label"><i class="lock icon"></i></div>
+                      <input type="text" name="team-secret" placeholder="{{ lang.competition_register.team_secret_placeholder }}">
+                    </div>
+                </div>
+                <button type="submit" name="join-button" class="ui fluid primary button">{{ lang.competition_register.join }}</button>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+{% endblock page %}

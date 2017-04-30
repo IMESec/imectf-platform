@@ -1,0 +1,25 @@
+<div class="ui basic segment competition-content">
+  <div class="competition-content-header">
+    <h2 class="ui center aligned header">{{ lang.team.team }}</h2>
+  </div>
+  <div class="competition-content-body">
+    <div class="ui big form">
+      <div class="field">
+        <label>{{ lang.team.name }}</label>
+        <span>{{ team.name }}</span>
+      </div>
+      <div class="field">
+        <label>{{ lang.team.secret }}</label>
+        <input type="text" value="{{ team.hash }}" readonly="readonly">
+      </div>
+      <div class="field">
+        <label>{{ lang.team.rank }}</label>
+        <span>131th</span>
+      </div>
+      <div class="field">
+        <label class="ui center aligned">{{ lang.team.score }}</label>
+        <span>3265 pts</span>
+      </div>
+    </div>
+  </div>
+</div>

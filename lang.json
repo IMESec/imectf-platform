@@ -16,7 +16,25 @@
       "login": "Login",
       "login_placeholder": "us3rn4m3",
       "pass_placeholder": "p455w0rd",
-      "register": "Registrar"
+      "register": "Register"
+    },
+    "team": {
+      "team": "Team Settings",
+      "name": "Name",
+      "secret": "Secret",
+      "rank": "Competition Rank",
+      "score": "Competition Score"
+    },
+    "competition_register": {
+      "header": "Competition Register",
+      "team_name": "Team Name",
+      "team_name_placeholder": "t34m_n4m3",
+      "secret": "Competition Secret",
+      "secret_placeholder": "c0mp3t1t10n_53cr3t",
+      "team_secret": "Team Secret",
+      "team_secret_placeholder": "t34m_53cr3t",
+      "register": "Register Team",
+      "join": "Join Team"
     },
     "main": {
       "title": "changeme",
@@ -73,72 +91,6 @@
       "submit": "Submit",
       "submit_placeholder": "Insert flag"
     },
-
-
-
-
-
-
-    "about": {
-      "title": "Sobre",
-      "news": "Novidades",
-      "news_text": "Aproveitem as 48h para ver todas as questões, procurarem na internet, conversar com os outros da equipe.<br>O objetivo desse Capture The Flag é incentivar que todos pesquisem como as coisas funcionam, então aproveitem  para aprender!",
-      "rules": "Regras",
-      "rules_text": "- Equipes de até 3 pessoas utilizando apenas uma conta<br>- Toda consulta é válida e recomendada<br>- As flags devem ser submetidas com o formato: CTFIME{FLAG}"
-    },
-    "task": {
-      "description": "Descrição",
-      "attachment": "Anexo",
-      "submit": "Enviar",
-      "success": "FLAG CORRETA!",
-      "failure": "Flag incorreta!",
-      "points_format": "%d pontos",
-      "solution_format": "Resolvido por %d",
-      "no_description": "(sem descrição)",
-      "placeholder": "CTFIME{insira a flag aqui}",
-      "hint": "Dica",
-      "no_hint": "(sem dicas)",
-      "show_hint": "Mostrar"
-    },
-    "addcat" : {
-      "title": "Adicionar categoria",
-      "name_label": "Nome da categoria: "
-    },
-    "reunions":{
-      "title": "Reuniões"
-    },
-    "addcompetition" : {
-      "add_title": "Nova competição",
-      "edit_title": "Editar competição",
-      "delete_title": "Deletar competição",
-      "delete_desc": "Tem certeza de que deseja deletar esta competição?",
-      "name_label": "Nome da competição: ",
-      "description_label": "Descrição: ",
-      "date_start": "Data de início" ,
-      "date_end": "Data de término" ,
-      "num_participants": "Quantidade de participantes"
-    },
-    "addtask" : {
-      "add_title": "Adicionar tarefa",
-      "edit_title": "Editar tarefa",
-      "delete_title": "Deletar tarefa",
-      "delete_desc": "Tem certeza de que deseja deletar esta tarefa?",
-      "competition_id": "Competição: ",
-      "cat_label": "Categoria: ",
-      "name_label": "Nome da tarefa: ",
-      "description_label": "Descrição: ",
-      "hint_label": "Dica: ",
-      "flag_label": "Flag: ",
-      "score_label": "Pontuação: "
-    },
-    "scoreboard": {
-      "title": "Scoreboard",
-      "player": "Player",
-      "score": "Pontuação"
-    },
-    "chat":{
-      "title": "Chat"
-    },
     "error": {
       "title": "Erro",
       "unknown": "Erro desconhecido",
@@ -150,7 +102,31 @@
       "task_not_found": "TBD",
       "form": "Entrada inválida",
       "not_started": "A competição ainda não começou!",
-      "finished": "A competição já acabou!"
+      "finished": "A competição já acabou!",
+      "competition_not_found": "Competition not found!"
+    },
+
+
+
+
+    "addcompetition" : {
+      "add_title": "Nova competição",
+      "edit_title": "Editar competição",
+      "delete_title": "Deletar competição",
+      "delete_desc": "Tem certeza de que deseja deletar esta competição?",
+      "name_label": "Nome da competição: ",
+      "description_label": "Descrição: ",
+      "date_start": "Data de início" ,
+      "date_end": "Data de término" ,
+      "num_participants": "Quantidade de participantes"
+    },
+    "scoreboard": {
+      "title": "Scoreboard",
+      "player": "Player",
+      "score": "Pontuação"
+    },
+    "chat":{
+      "title": "Chat"
     }
   }
 }

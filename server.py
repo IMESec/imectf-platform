@@ -39,15 +39,26 @@ config = None
 
 descAllowedTags = bleach.ALLOWED_TAGS + ['br', 'pre']
 
+
+@event.listens_for(Engine, "connect")
+def _set_sqlite_pragma(dbapi_connection, connection_record):
+    """ Enforces sqlite foreign key constrains """
+    if isinstance(dbapi_connection, SQLite3Connection):
+        cursor = dbapi_connection.cursor()
+        cursor.execute("PRAGMA foreign_keys=ON;")
+        cursor.close()
+
+
 def login_required(f):
     """Ensures that an user is logged in"""
 
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if 'user_id' not in session:
-            return redirect(url_for('error', msg='login_required'))
+            return redirect('/login')
         return f(*args, **kwargs)
     return decorated_function
+
 
 def admin_required(f):
     """Ensures that an user is logged in"""
@@ -55,12 +66,13 @@ def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if 'user_id' not in session:
-            return redirect(url_for('error', msg='login_required'))
+            return redirect('/login')
         user = get_user()
         if user["isAdmin"] == False:
             return redirect(url_for('error', msg='admin_required'))
         return f(*args, **kwargs)
     return decorated_function
+
 
 def get_user():
     """Looks up the current user in the database"""
@@ -71,26 +83,43 @@ def get_user():
 
     return None
 
+
 def get_task(comp_id, tid):
     """Finds a task with a given category and score"""
 
     task = db.query("SELECT t.*, c.name cat_name FROM tasks t JOIN categories c on c.id = t.category JOIN competitions comp ON comp.id=t.competition WHERE t.id = :tid AND t.competition = :comp_id",
-            tid=tid, comp_id=comp_id)
+                    tid=tid, comp_id=comp_id)
     return list(task)[0]
+
+
+def get_team(comp_id, user_id):
+    user = get_user()
+    if not user:
+        return None
+
+    team = db.query('SELECT * FROM teams t JOIN team_player tp ON t.id = tp.id_team AND tp.id_user = :user_id AND t.comp_id = :comp_id LIMIT 1',
+                    user_id=user['id'], comp_id=comp_id)
+    team = list(team)
+
+    if len(team) == 0:
+        return None
+    return team[0]
+
 
 def get_flags():
     """Returns the flags of the current user"""
 
-    flags = db.query('''select f.task_id from flags f
-        where f.user_id = :user_id''',
-        user_id=session['user_id'])
+    flags = db.query('select f.task_id from flags f where f.user_id = :user_id',
+                     user_id=session['user_id'])
     return [f['task_id'] for f in list(flags)]
+
 
 def get_dates(comp_id):
     """Returns the end and start dates of current competition"""
 
     dates = db['competitions'].find_one(id=comp_id)
     return dates
+
 
 def check_running(comp_id):
     """   """
@@ -99,9 +128,21 @@ def check_running(comp_id):
     startDate = datetime.datetime.strptime(dates['date_start'], "%m-%d-%y %H:%M%p").date()
     endDate = datetime.datetime.strptime(dates['date_end'], "%m-%d-%y %H:%M%p").date()
 
-    if datetime.datetime.today().date() > startDate:	
+    if datetime.datetime.today().date() > startDate:
         if datetime.datetime.today().date() < endDate:
             db.query('UPDATE competitions SET running=1 WHERE id=:comp_id', comp_id=comp_id)
+
+
+@app.route('/')
+def index():
+    """Displays the main page"""
+
+    user = get_user()
+
+    # Render template
+    render = render_template('main.html', lang=lang, user=user)
+    return make_response(render)
+
 
 @app.route('/error/<msg>')
 def error(msg):
@@ -117,18 +158,12 @@ def error(msg):
     render = render_template('error.html', lang=lang, message=message, user=user)
     return make_response(render)
 
+
 def session_login(username):
     """Initializes the session with the current user's id"""
     user = db['users'].find_one(username=username)
     session['user_id'] = user['id']
 
-@event.listens_for(Engine, "connect")
-def _set_sqlite_pragma(dbapi_connection, connection_record):
-    """ Enforces sqlite foreign key constrains """
-    if isinstance(dbapi_connection, SQLite3Connection):
-        cursor = dbapi_connection.cursor()
-        cursor.execute("PRAGMA foreign_keys=ON;")
-        cursor.close()
 
 @app.route('/login', methods = ['GET'])
 def login_page():
@@ -156,7 +191,8 @@ def login():
 
         if check_password_hash(user['password'], password):
             session_login(username)
-            return redirect('/competitions')
+            #return redirect('/competitions')
+            return redirect('/competition/1')
 
     if 'register-button' in request.form:
         """Attempts to register a new user"""
@@ -190,9 +226,19 @@ def login():
         # Set up the user id for this session
         session_login(username)
 
+        #return redirect('/competitions')
         return redirect('/competition/1')
 
     return redirect('/error/invalid_credentials')
+
+
+@app.route('/logout')
+@login_required
+def logout():
+    """Logs the current user out"""
+
+    del session['user_id']
+    return redirect('/')
 
 
 @app.route('/competitions')
@@ -213,19 +259,14 @@ def competitions():
 
 def competition_page(comp_id, page, **kwargs):
     user = get_user()
+    team = get_team(comp_id, user['id'])
+
+    if not team:
+        return redirect('/competition/'+comp_id+'/team-register')
 
     competition = db['competitions'].find_one(id=comp_id)
-
-    """
-    name_team = ""
-    if not user['isAdmin']:
-        player_team = db.query("SELECT * FROM teams t, team_player tp WHERE tp.id_team = t.id AND t.comp_id = :comp_id AND tp.id_user = :user_id", comp_id=comp_id, user_id=session['user_id'])
-        player_team = list(player_team)
-        # If the normal player doesn't have a team to that competition
-        if len(player_team) == 0:
-            return redirect(url_for('teamsign', comp_id=comp_id))
-        name_team = player_team[0]['name']
-    """
+    if not competition:
+        return redirect('/error/competition_not_found')
 
     categories = list(db['categories'].all())
 
@@ -234,7 +275,7 @@ def competition_page(comp_id, page, **kwargs):
 
     render = render_template('competition.html', lang=lang,
                              user=user, competition=competition, categories=categories,
-                             tasks=tasks, page=page, **kwargs)
+                             tasks=tasks, page=page, team=team, **kwargs)
     return make_response(render)
 
 
@@ -324,24 +365,105 @@ def competition_remove_task(comp_id):
 @app.route('/competition/<comp_id>/task/<task_id>', methods=['GET'])
 @login_required
 def competition_task(comp_id, task_id):
-    print 'get'
     task = db['tasks'].find_one(id=task_id)
-    print task
     return competition_page(comp_id, 'competition-task.html', task=task)
 
 
 @app.route('/competition/<comp_id>/task/<task_id>', methods=['POST'])
 @login_required
 def competition_task_post(comp_id, task_id):
-    print 'post'
+    user = get_user()
+    if get_team(comp_id, user['id']) is None:
+        return jsonify({}), 400
+
     task = db['tasks'].find_one(id=task_id)
     render = render_template('competition-task.html', lang=lang, task=task)
     return render, 200
 
 
+@app.route('/competition/<comp_id>/team', methods=['GET'])
+@login_required
+def competition_team(comp_id):
+    return competition_page(comp_id, 'competition-team.html')
 
 
+@app.route('/competition/<comp_id>/team', methods=['POST'])
+@login_required
+def competition_team_post(comp_id):
+    user = get_user()
+    team = get_team(comp_id, user['id'])
+    if not team:
+        return jsonify({}), 400
 
+    render = render_template('competition-team.html', lang=lang, team=team)
+    return make_response(render), 200
+
+
+@app.route('/competition/<comp_id>/team-register', methods=['GET'])
+@login_required
+def competition_team_register(comp_id):
+    user = get_user()
+    team = get_team(comp_id, user['id'])
+    if team:
+        return redirect('/competition/'+comp_id+'/team')
+
+    render = render_template('team-register.html', lang=lang, user=user)
+    return make_response(render), 200
+
+@app.route('/competition/<comp_id>/team-register', methods=['POST'])
+@login_required
+def competition_team_register_post(comp_id):
+    secret = request.form['secret']
+    # TODO
+
+    if 'register-button' in request.form:
+        try:
+            name = bleach.clean(request.form['team-name'], tags=[])
+        except KeyError:
+            return redirect('/error/form')
+        else:
+            if len(name) == 0:
+                return redirect('/error/form')
+
+            teams = db['teams']
+            team_secret = hashlib.md5(str(datetime.datetime.utcnow())).hexdigest()
+            team = dict(
+                name=name,
+                hash=team_secret,
+                comp_id=comp_id
+            )
+            teams.insert(team)
+
+            id_team = teams.find_one(hash=team_secret)['id']
+            team_player = db['team_player']
+            team_player.insert(dict(id_team=id_team, id_user=session['user_id']))
+
+            #return redirect('/competitions')
+            return redirect('/competition/1')
+
+    if 'join-button' in request.form:
+        try:
+            team_secret = bleach.clean(request.form['team-secret'], tags=[])
+        except KeyError:
+            return redirect('/error/form')
+        else:
+            team = db.query("SELECT * FROM teams WHERE hash = :team_secret AND comp_id = :comp_id", team_secret=team_secret, comp_id=comp_id)
+            team = list(team)
+
+            if len(team) == 0:
+                return redirect('/error/wrong_hash')
+            else:
+                team=team[0]
+                team_players = db.query("SELECT * FROM team_player WHERE id_team = :id_team", id_team=team['id'])
+                team_players = list(team_players)
+                if len(team_players) == 3:
+                    return redirect('/error/too_many_members')
+                else:
+                    team_playersDB = db['team_player']
+                    team_playersDB.insert(dict(id_team=team['id'], id_user= session['user_id']))
+
+            #return redirect('/competitions')
+            return redirect('/competition/1')
 
 
 
@@ -349,7 +471,7 @@ def competition_task_post(comp_id, task_id):
 def teamsign(comp_id):
     user = get_user()
 
-    render = render_template('frame.html', lang=lang, page='teamsign.html',
+    render = render_template('teamsign.html', lang=lang,
         user=user, comp_id=comp_id)
     return make_response(render)
 
@@ -517,7 +639,6 @@ def task_add():
 @app.route('/task/edit', methods=['POST'])
 @admin_required
 def task_edit():
-    print request.form
     try:
         tid = request.form['task-id']
         name = bleach.clean(request.form['task-name'], tags=[])
@@ -683,36 +804,6 @@ def about():
         user=user)
     return make_response(render)
 
-
-@app.route('/chat')
-@login_required
-def chat():
-    """Displays the IRC chat"""
-
-    user = get_user()
-
-    # Render template
-    render = render_template('frame.html', lang=lang, page='chat.html', user=user)
-    return make_response(render)
-
-
-@app.route('/logout')
-@login_required
-def logout():
-    """Logs the current user out"""
-
-    del session['user_id']
-    return redirect('/')
-
-@app.route('/')
-def index():
-    """Displays the main page"""
-
-    user = get_user()
-
-    # Render template
-    render = render_template('main.html', lang=lang, user=user)
-    return make_response(render)
 
 """Initializes the database and sets up the language"""
 

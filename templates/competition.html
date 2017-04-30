@@ -20,7 +20,7 @@ $(function() {
   bindElements();
 
   window.onpopstate = function(event) {
-    $('.competition-content').html(event.state);
+    $('.competition-content-wrapper').html(event.state);
     bindElements();
   }
 
@@ -29,7 +29,7 @@ $(function() {
     var url = $(this).attr('href');
     ajaxQuery(url, {}, function(res) {
       window.history.pushState(res, "task", url);
-      $('.competition-content').html(res);
+      $('.competition-content-wrapper').html(res);
 
       bindElements();
     });
@@ -95,9 +95,9 @@ $(function() {
 
           <div class="list accordion-content active">
 
-            <a class="item task-explorer content-load">
+            <a class="item task-explorer content-load" href="/competition/{{ competition.id }}/team">
               <div class="right floated content team-name">
-                <div class="header">TODO</div>
+                <div class="header">{{ team.name }}</div>
               </div>
 
               <i class="users icon"></i>
@@ -159,7 +159,7 @@ $(function() {
     </div>
   </div>
   <div class="competition-wrapper">
-    <div class="competition-content">
+    <div class="competition-content-wrapper">
       {% include page ignore missing %}
     </div>
     <div class="competition-shell">
