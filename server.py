@@ -271,7 +271,7 @@ def competition_page(comp_id, page, **kwargs):
     categories = list(db['categories'].all())
 
     tasks = db.query("SELECT * FROM tasks t, task_competition tc WHERE t.id = tc.task_id AND tc.comp_id = :comp_id", comp_id=comp_id)
-    tasks = list(tasks)
+    tasks = sorted(list(tasks), key=lambda x: x['score'])
 
     render = render_template('competition.html', lang=lang,
                              user=user, competition=competition, categories=categories,
