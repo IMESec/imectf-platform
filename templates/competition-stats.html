@@ -1,0 +1,23 @@
+<div class="ui basic segment competition-content">
+  <div class="competition-content-header">
+    <h2 class="ui center aligned header">{{ competition.name }}</h2>
+  </div>
+  <div class="competition-content-body">
+    <div class="ui form">
+      <div class="ui dividing header">{{ lang.stats.settings_header }}</div>
+      <div class="field">
+        <label>{{ lang.stats.secret }}</label>
+        <input type="text" value="{{ competition.secret }}" readonly="readonly">
+      </div>
+      <div class="field">
+        <label>{{ lang.stats.spectator_secret }}</label>
+        <input type="text" value="{{ competition.spectator_secret }}" readonly="readonly">
+      </div>
+      <div class="ui dividing header">{{ lang.stats.stats_header }}</div>
+      <div class="field">
+        <label>{{ lang.stats.competitor_count }}</label>
+        <span>10</span>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,39 @@
+<div class="ui basic segment competition-content">
+  <div class="competition-content-header">
+    <h2 class="ui center aligned header">{{ lang.launch.header }}</h2>
+  </div>
+  <div class="competition-content-body">
+    <div class="ui form">
+      <div class="field">
+        <label>{{ lang.launch.name }}</label>
+        <input type="text" value="{{ competition.name }}">
+      </div>
+      <div class="field">
+        <label>{{ lang.launch.description }}</label>
+        <textarea row=3>{{ competition.desc }}</textarea>
+      </div>
+      <div class="field">
+        <label>{{ lang.launch.date_start }}</label>
+        <input type="text" value="{{ competition.date_start }}">
+      </div>
+      <div class="field">
+        <label>{{ lang.launch.date_end }}</label>
+        <input type="text" value="{{ competition.date_end }}">
+      </div>
+      <div class="field">
+        <label>{{ lang.launch.secret }}</label>
+        <input type="text" value="{{ competition.secret }}" disabled>
+      </div>
+      <div class="field">
+        <label>{{ lang.launch.spectator_secret }}</label>
+        <input type="text" value="{{ competition.spectator_secret }}" disabled>
+      </div>
+
+      <a class="ui primary right floated labeled icon button">
+        <i class="rocket icon"></i>
+        {{ lang.launch.launch }}
+      </a>
+      <a class="ui right floated positive button">{{ lang.launch.save }}</a>
+    </div>
+  </div>
+</div>

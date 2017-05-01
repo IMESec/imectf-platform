@@ -68,7 +68,7 @@ def admin_required(f):
         if 'user_id' not in session:
             return redirect('/login')
         user = get_user()
-        if not user or user["isAdmin"] == False:
+        if not user or user["admin"] == False:
             return redirect(url_for('error', msg='admin_required'))
         return f(*args, **kwargs)
     return decorated_function
@@ -97,7 +97,7 @@ def get_team(comp_id, user_id):
     if not user:
         return None
 
-    team = db.query('SELECT * FROM teams t JOIN team_player tp ON t.id = tp.id_team AND tp.id_user = :user_id AND t.comp_id = :comp_id LIMIT 1',
+    team = db.query('SELECT * FROM teams t JOIN team_player tp ON t.id = tp.team_id AND tp.user_id = :user_id AND t.comp_id = :comp_id LIMIT 1',
                     user_id=user['id'], comp_id=comp_id)
     team = list(team)
 
@@ -138,6 +138,9 @@ def index():
     """Displays the main page"""
 
     user = get_user()
+
+    # XXX
+    return redirect('/login')
 
     # Render template
     render = render_template('main.html', lang=lang, user=user)
@@ -209,18 +212,15 @@ def login():
         if user_found:
             return redirect('/error/already_registered')
 
-        isAdmin = False
-        isHidden = False
+        admin = False
         userCount = db['users'].count()
 
         #if no users, make first user admin
         if userCount == 0:
-            isAdmin = True
-            isHidden = True
+            admin = True
 
         new_user = dict(username=username,
-            password=generate_password_hash(password), isAdmin=isAdmin,
-            isHidden=isHidden)
+            password=generate_password_hash(password), admin=admin)
         db['users'].insert(new_user)
 
         # Set up the user id for this session
@@ -255,34 +255,6 @@ def competitions():
     render = render_template('competitions.html', lang=lang,
         user=user, competitions=competitions)
     return make_response(render)
-
-
-def competition_page(comp_id, page, **kwargs):
-    user = get_user()
-    team = get_team(comp_id, user['id'])
-
-    if not team:
-        return redirect('/competition/'+comp_id+'/team-register')
-
-    competition = db['competitions'].find_one(id=comp_id)
-    if not competition:
-        return redirect('/error/competition_not_found')
-
-    categories = list(db['categories'].all())
-
-    tasks = db.query("SELECT * FROM tasks t, task_competition tc WHERE t.id = tc.task_id AND tc.comp_id = :comp_id", comp_id=comp_id)
-    tasks = sorted(list(tasks), key=lambda x: x['score'])
-
-    render = render_template('competition.html', lang=lang,
-                             user=user, competition=competition, categories=categories,
-                             tasks=tasks, page=page, team=team, **kwargs)
-    return make_response(render)
-
-
-@app.route('/competition/<comp_id>/')
-@login_required
-def competition(comp_id):
-    return competition_page(comp_id, None)
 
 
 @app.route('/competition/<comp_id>/edit', methods=['GET'])
@@ -365,6 +337,65 @@ def competition_remove_task(comp_id):
         return jsonify(task), 200
 
 
+def competition_page(comp_id, page, **kwargs):
+    competition = db['competitions'].find_one(id=comp_id)
+    if not competition:
+        return redirect('/error/competition_not_found')
+
+    user = get_user()
+    if not user:
+        return redirect('/login')
+
+    team = get_team(comp_id, user['id'])
+
+    if not team:
+        return redirect('/competition/'+comp_id+'/team-register')
+
+    categories = list(db['categories'].all())
+
+    tasks = db.query("SELECT * FROM tasks t, task_competition tc WHERE t.id = tc.task_id AND tc.comp_id = :comp_id", comp_id=comp_id)
+    tasks = sorted(list(tasks), key=lambda x: x['score'])
+
+    render = render_template('competition.html', lang=lang,
+                             user=user, competition=competition, categories=categories,
+                             tasks=tasks, page=page, team=team, **kwargs)
+    return make_response(render)
+
+
+@app.route('/competition/<comp_id>/')
+@login_required
+def competition(comp_id):
+    return redirect('/competition/' + comp_id + '/stats')
+
+
+@app.route('/competition/<comp_id>/stats', methods=['GET'])
+@login_required
+def competition_stats(comp_id):
+    return competition_page(comp_id, 'competition-stats.html')
+
+
+@app.route('/competition/<comp_id>/stats', methods=['POST'])
+@login_required
+def competition_stats_post(comp_id):
+    competition = db['competitions'].find_one(id=comp_id)
+    render = render_template('competition-stats.html', lang=lang, competition=competition)
+    return render, 200
+
+
+@app.route('/competition/<comp_id>/launch', methods=['GET'])
+@admin_required
+def competition_launch(comp_id):
+    return competition_page(comp_id, 'competition-launch.html')
+
+
+@app.route('/competition/<comp_id>/launch', methods=['POST'])
+@admin_required
+def competition_launch_post(comp_id):
+    competition = db['competitions'].find_one(id=comp_id)
+    render = render_template('competition-launch.html', lang=lang, competition=competition)
+    return render, 200
+
+
 @app.route('/competition/<comp_id>/task/<task_id>', methods=['GET'])
 @login_required
 def competition_task(comp_id, task_id):
@@ -414,14 +445,34 @@ def competition_team_register(comp_id):
     if team:
         return redirect('/competition/'+comp_id+'/team')
 
-    render = render_template('team-register.html', lang=lang, user=user)
+    render = render_template('competition-team-register.html', lang=lang, user=user, competition=competition)
     return make_response(render), 200
 
-@app.route('/competition/<comp_id>/team-register', methods=['POST'])
+
+def create_team(name, comp_id, secret, spectator):
+    teams = db['teams']
+
+    team = dict(
+        name=name,
+        comp_id=comp_id,
+        secret=secret,
+        spectator=spectator
+    )
+
+    return teams.insert(team)
+
+
+@app.route('/competition/<int:comp_id>/team-register', methods=['POST'])
 @login_required
 def competition_team_register_post(comp_id):
     secret = request.form['secret']
-    # TODO
+
+    competition = db['competitions'].find_one(id=comp_id)
+
+    if secret != competition['secret'] and secret != competition['spectator_secret']:
+        return redirect('/error/incorrect_secret')
+
+    spectator = secret == competition['spectator_secret']
 
     if 'register-button' in request.form:
         try:
@@ -432,18 +483,15 @@ def competition_team_register_post(comp_id):
             if len(name) == 0:
                 return redirect('/error/form')
 
-            teams = db['teams']
-            team_secret = hashlib.md5(str(datetime.datetime.utcnow())).hexdigest()
-            team = dict(
-                name=name,
-                hash=team_secret,
-                comp_id=comp_id
+            team_id = create_team(
+                name,
+                comp_id,
+                hashlib.md5(str(datetime.datetime.utcnow())).hexdigest(),
+                spectator
             )
-            teams.insert(team)
 
-            id_team = teams.find_one(hash=team_secret)['id']
             team_player = db['team_player']
-            team_player.insert(dict(id_team=id_team, id_user=session['user_id']))
+            team_player.insert(dict(team_id=team_id, user_id=session['user_id']))
 
             #return redirect('/competitions')
             return redirect('/competition/1')
@@ -454,23 +502,29 @@ def competition_team_register_post(comp_id):
         except KeyError:
             return redirect('/error/form')
         else:
-            team = db.query("SELECT * FROM teams WHERE hash = :team_secret AND comp_id = :comp_id", team_secret=team_secret, comp_id=comp_id)
+            team = db.query("SELECT * FROM teams WHERE secret = :team_secret AND comp_id = :comp_id", team_secret=team_secret, comp_id=comp_id)
             team = list(team)
 
             if len(team) == 0:
                 return redirect('/error/wrong_hash')
             else:
                 team=team[0]
-                team_players = db.query("SELECT * FROM team_player WHERE id_team = :id_team", id_team=team['id'])
+                team_players = db.query("SELECT * FROM team_player WHERE team_id = :team_id", team_id=team['id'])
                 team_players = list(team_players)
                 if len(team_players) == 3:
                     return redirect('/error/too_many_members')
                 else:
                     team_playersDB = db['team_player']
-                    team_playersDB.insert(dict(id_team=team['id'], id_user= session['user_id']))
+                    team_playersDB.insert(dict(team_id=team['id'], user_id= session['user_id']))
 
             #return redirect('/competitions')
             return redirect('/competition/1')
+
+
+
+
+
+
 
 
 @app.route('/addcat/', methods=['GET'])
@@ -495,17 +549,23 @@ def addcatsubmit():
 
 
 
-@app.route('/addcompetition/', methods=['GET'])
+
+
+
+
+
+# TODO change this to modal in /competitions
+@app.route('/competition/new', methods=['GET'])
 @admin_required
-def addcompetition():
+def competition_new():
     user = get_user()
 
-    render = render_template('frame.html', lang=lang, user=user, page='addcompetition.html')
+    render = render_template('competition-new.html', lang=lang, user=user)
     return make_response(render)
 
-@app.route('/addcompetition/', methods=['POST'])
+@app.route('/competition/new', methods=['POST'])
 @admin_required
-def addcompetitionsubmit():
+def competition_new_submit():
     try:
         name = bleach.clean(request.form['name'], tags=descAllowedTags)
         desc = bleach.clean(request.form['desc'], tags=descAllowedTags)
@@ -518,16 +578,16 @@ def addcompetitionsubmit():
         competitions = db['competitions']
         competition = dict(
             name=name,
-            desc=desc
+            desc=desc,
+            active=0,
+            secret = hashlib.md5('secret'+str(datetime.datetime.utcnow())).hexdigest(),
+            spectator_secret = hashlib.md5('spectator'+str(datetime.datetime.utcnow())).hexdigest(),
             #date_start=date_start
             )
 
         competitions.insert(competition)
+
         return redirect('/competitions')
-
-
-
-
 
 
 def generate_filename(file, task_id):
@@ -590,9 +650,9 @@ def task_add():
         if file:
             task["file"] = store_filename(file, task['id'])
 
-        tasks.insert(task)
+        task_id = tasks.insert(task)
 
-        task = tasks.find_one(name = task["name"], flag = task["flag"])
+        task = tasks.find_one(id=task_id)
         return jsonify(task), 200
 
 
@@ -738,7 +798,7 @@ def scoreboard_json():
 def deleteCompetitions(postID):
 
     user = get_user()
-    if user["isAdmin"]:
+    if user["admin"]:
         competitions = db.query('''delete from competitions where id = ''' + postID)
         #flash('Lista deletada com sucesso')
     
@@ -771,7 +831,10 @@ def about():
 config_str = open('config.json', 'rb').read()
 config = json.loads(config_str)
 
-app.secret_key = config['secret_key']
+# Load environment config
+app.secret_key = os.getenv('SECRETKEY', 'changeme')
+if app.secret_key == 'changeme':
+    print 'Configure a SECRETKEY envvar!'
 
 # Load language
 lang_str = open(config['language_file'], 'rb').read()

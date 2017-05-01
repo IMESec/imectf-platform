@@ -19,9 +19,9 @@
       "register": "Register"
     },
     "team": {
-      "team": "Team Settings",
-      "name": "Name",
+      "settings_header": "Team Settings",
       "secret": "Secret",
+      "competition_header": "Competition Stats",
       "rank": "Competition Rank",
       "score": "Competition Score"
     },
@@ -82,14 +82,43 @@
       "edit_accept": "Update",
 
       "admin": "Admin",
-      "settings": "Settings",
+      "settings": "Edit Competition",
       "deploy": "Launch in 3...",
+
       "competition": "Competition",
+      "stats": "Statistics",
       "team": "Team",
       "leaderboard": "Leaderboard",
       "file": "File",
       "submit": "Submit",
       "submit_placeholder": "Insert flag"
+    },
+    "stats": {
+      "settings_header": "Settings",
+      "secret": "Competitor Secret",
+      "spectator_secret": "Spectator Secret",
+      "stats_header": "Statistics",
+      "competitor_count": "# of Competitors"
+    },
+    "launch": {
+      "header": "Launch Competition",
+      "name": "Name",
+      "description": "Description",
+      "date_start": "Start date",
+      "date_end": "End date",
+      "secret": "Competitor Secret",
+      "spectator_secret": "Spectator Secret",
+      "save": "Save",
+      "launch": "Launch"
+    },
+    "competitions": {
+      "header": "Competitions",
+      "name": "Name",
+      "description": "Description",
+      "date_start": "Start Date",
+      "date_end": "End Date",
+      "enter": "Enter",
+      "new": "New Competition"
     },
     "error": {
       "title": "Erro",

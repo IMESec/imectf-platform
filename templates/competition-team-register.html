@@ -11,7 +11,7 @@
               <label>{{ lang.competition_register.secret }}
                 <div class="ui right corner labeled input">
                   <div class="ui right corner label"><i class="key icon"></i></div>
-                  <input type="text" name="secret" placeholder="{{ lang.competition_register.secret_placeholder }}" required>
+                  <input type="text" name="secret" placeholder="{{ lang.competition_register.secret_placeholder }}" {% if user.admin %}value="{{ competition.spectator_secret }}"{% endif %} required>
                 </div>
             </div>
             <div class="ui two column relaxed grid">

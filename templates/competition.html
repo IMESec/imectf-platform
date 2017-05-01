@@ -48,7 +48,7 @@ $(function() {
     <div class="row">
 
       <div class="ui list accordion">
-        {% if user.isAdmin %}
+        {% if user.admin %}
         <div class="item ui">
           <a class="accordion-title active">
             <i class="spy open icon"></i>
@@ -68,13 +68,13 @@ $(function() {
               </div>
             </a>
 
-            <!-- <a class="item task-explorer">
+            <a class="item task-explorer" href="/competition/{{ competition.id }}/launch">
               <i class="rocket icon"></i>
 
               <div class="content">
               <div class="header">{{ lang.competition.deploy }}</div>
               </div>
-            </a> -->
+            </a>
 
           </div>
         </div>
@@ -94,6 +94,15 @@ $(function() {
 
 
           <div class="list accordion-content active">
+
+            <a class="item task-explorer content-load" href="/competition/{{ competition.id }}/stats">
+              <i class="pie chart icon"></i>
+
+              <div class="content">
+                <div class="header">{{ lang.competition.stats }}</div>
+              </div>
+            </a>
+
 
             <a class="item task-explorer content-load" href="/competition/{{ competition.id }}/team">
               <div class="right floated content team-name">

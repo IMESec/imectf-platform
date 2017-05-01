@@ -2,13 +2,13 @@
 
 {% block page %}
 <div class="ui container main">
-  <h2 class="ui left floated inverted header">Competitions</h2>
+  <h2 class="ui left floated inverted header">{{ lang.competitions.header }}</h2>
   <table class="ui single line selectable inverted fixed sortable unstackable table tasks-table">
     <thead>
       <tr>
         <th class="one wide center aligned">#</th>
-        <th>Nome</th>
-        <th>Data</th>
+        <th>{{ lang.competitions.name }}</th>
+        <th>{{ lang.competitions.description }}</th>
         <!--<th>Término</th>-->
         <th class="two wide center aligned"></th>
       </tr>
@@ -17,12 +17,12 @@
       {% for competition in competitions  %}
       <tr>
         <td class="one wide center aligned">{{ competition.id }}</td>
+        <td>{{ competition.name }}</td>
         <td>{{ competition.desc }}</td>
-        <td>{{ competition.date_start }}</td>
         <!--<td>{{ competition.date_end }}</td>-->
         <td class="two wide center aligned">
           <a href="/competition/{{ competition.id }}">
-            <button class="ui button">Acessar</button>
+            <button class="ui button">{{ lang.competitions.enter }}</button>
           </a>
         </td>
       </tr>
@@ -32,9 +32,9 @@
       <tr>
         <th colspan="4">
           <div class="ui right floated">
-            <button class="ui right floated small primary labeled icon button">
-              <i class="plus icon"></i>New competition
-            </button>
+            <a class="ui right floated small primary labeled icon button" href="/competition/new">
+              <i class="plus icon"></i>{{ lang.competitions.new }}
+            </a>
         </th>
     </tfoot>
   </table>
