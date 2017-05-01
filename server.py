@@ -279,7 +279,7 @@ def competition(comp_id):
     user = get_user()
     name_team = ""
     if not user['isAdmin']:
-        player_team = db.query("SELECT * FROM teams t, team_player tp WHERE tp.id_team = t.id AND t.comp_id = :comp_id AND tp.id_user = :user_id", comp_id=comp_id, user_id=session['user_id'])
+        player_team = db.query("SELECT * FROM teams t, team_player tp WHERE tp.team_id = t.id AND t.comp_id = :comp_id AND tp.user_id = :user_id", comp_id=comp_id, user_id=session['user_id'])
         player_team = list(player_team)
         # If the normal player doesn't have a team to that competition
         if len(player_team) == 0:
@@ -321,6 +321,8 @@ def editcompsubmit(comp_id):
         else:
             task = task[0]
             result = {'success': True, 'id':task['id'], 'name':task['name'], 'desc':task['desc'], 'hint':task['hint'], 'category':str(task['category']), 'flag':task['flag'], 'file':task['file']}
+        db.query("INSERT INTO task_competition (task_id, comp_id, score) VALUES (:task_id, :comp_id, 10)", task_id=task['id'], comp_id=comp_id)
+
         return jsonify(result)
 
 @app.route('/teamsign/<comp_id>')
@@ -341,16 +343,19 @@ def teamsignsubmit(comp_id):
         else:
             teams = db['teams']
             hash_team = hashlib.md5(name + "competicao" + str(comp_id)).hexdigest()
+            timestamp = int(time.time() * 1000)
             team = dict(
                 name=name,
                 hash=hash_team,
-                comp_id=comp_id
+                comp_id=comp_id,
+                score=0,
+                timestamp=timestamp
             )
             teams.insert(team)
 
-            id_team = teams.find_one(hash=hash_team)['id']
+            team_id = teams.find_one(hash=hash_team)['id']
             team_player = db['team_player']
-            team_player.insert(dict(id_team=id_team, id_user=session['user_id']))
+            team_player.insert(dict(team_id=team_id, user_id=session['user_id']))
     
     elif bleach.clean(request.form['check'], tags=[]) == 'enterTeam':
         try:
@@ -365,13 +370,13 @@ def teamsignsubmit(comp_id):
                 return redirect('/error/wrong_hash')
             else:
                 team=team[0]
-                team_players = db.query("SELECT * FROM team_player WHERE id_team = :id_team", id_team=team['id'])
+                team_players = db.query("SELECT * FROM team_player WHERE team_id = :team_id", team_id=team['id'])
                 team_players = list(team_players)
                 if len(team_players) == 3:
                     return redirect('/error/too_many_members')
                 else:
                     team_playersDB = db['team_player']
-                    team_playersDB.insert(dict(id_team=team['id'], id_user= session['user_id']))
+                    team_playersDB.insert(dict(team_id=team['id'], user_id= session['user_id']))
 
     return redirect(url_for('competition', comp_id=comp_id))
 
@@ -608,32 +613,40 @@ def task(comp_id, tid):
         user=user, category=task["cat_name"], comp_id=comp_id, task=task, score=task["score"])
     return make_response(render)
 
-@app.route('/submit/<comp_id>/<tid>/<flag>')
+@app.route('/submit/<comp_id>/<task_id>/<flag>')
 @login_required
-def submit(comp_id, tid, flag):
+def submit(comp_id, task_id, flag):
     """Handles the submission of flags"""
-
     user = get_user()
+    user_id = user["id"]
 
-    task = get_task(comp_id, tid)
-    flags = get_flags()
-    task_done = task['id'] in flags
+    """ Get the other users on the team """
+    users_team = list(db.query("SELECT user_id FROM team_player WHERE team_id = (SELECT team_id FROM team_player WHERE user_id = :user_id) AND user_id != :user_id",user_id=user_id))
+    """ Get the users that solved the task """
+    users_solved = list(db.query("SELECT user_id FROM flags WHERE task_id=:task_id AND comp_id=:comp_id", task_id=task_id, comp_id=comp_id))
+    
+    """ Check if the same player already solved the task """
+    if {"user_id":user_id} in users_solved:
+        return jsonify({"success":True})
 
-    result = {'success': False}
-    if not task_done and task['flag'] == b64decode(flag):
-
-        timestamp = int(time.time() * 1000)
-        ip = request.remote_addr
-        print "flag submitter ip: {}".format(ip)
-
-        # Insert flag
-        new_flag = dict(task_id=task['id'], user_id=session['user_id'],
-            score=task["score"], timestamp=timestamp, ip=ip)
-        db['flags'].insert(new_flag)
-
-        result['success'] = True
-
-    return jsonify(result)
+    timestamp = int(time.time() * 1000)
+    """ Check if other person from the team solved the task """
+    solved = False
+    for user in users_team:
+        if user in users_solved:
+            solved = True
+    
+    if not solved:
+        team_id = list(db.query("SELECT team_id FROM team_player WHERE user_id=:user_id", user_id=user_id))[0]
+        team_id = team_id["team_id"]
+        score_team = list(db.query("SELECT score FROM teams WHERE id = :team_id AND comp_id=:comp_id",comp_id=comp_id, team_id=team_id, user_id=user_id))[0]
+        score_team = score_team["score"]
+        score_task = list(db.query("SELECT score FROM task_competition WHERE task_id=:task_id AND comp_id=:comp_id", task_id=task_id, comp_id=comp_id))[0]
+        score_task = score_task["score"]
+        score_team = score_team + score_task
+        db.query("UPDATE teams SET score = :score_team, timestamp = :timestamp WHERE id = :team_id", score_team=score_team, team_id=team_id, timestamp=timestamp)
+    db.query("INSERT INTO flags (task_id, user_id, comp_id, timestamp) VALUES (:task_id, :user_id, :comp_id, :timestamp)",task_id=task_id, comp_id=comp_id, user_id=user_id, timestamp=timestamp)
+    return jsonify({"succes":True})
 
 @app.route('/scoreboard/<comp_id>/')
 @login_required
