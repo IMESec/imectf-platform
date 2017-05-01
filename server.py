@@ -68,7 +68,7 @@ def admin_required(f):
         if 'user_id' not in session:
             return redirect('/login')
         user = get_user()
-        if user["isAdmin"] == False:
+        if not user or user["isAdmin"] == False:
             return redirect(url_for('error', msg='admin_required'))
         return f(*args, **kwargs)
     return decorated_function
@@ -289,6 +289,9 @@ def competition(comp_id):
 @admin_required
 def competition_edit(comp_id):
     competition = db['competitions'].find_one(id=comp_id)
+    if not competition:
+        return redirect('/error/competition_not_found')
+
     categories = list(db['categories'].all())
 
     tasks_comp = db.query("SELECT * FROM tasks t JOIN task_competition tc ON t.id = tc.task_id AND tc.comp_id = :comp_id", comp_id=comp_id)
@@ -402,6 +405,10 @@ def competition_team_post(comp_id):
 @app.route('/competition/<comp_id>/team-register', methods=['GET'])
 @login_required
 def competition_team_register(comp_id):
+    competition = db['competitions'].find_one(id=comp_id)
+    if not competition:
+        return redirect('/error/competition_not_found')
+
     user = get_user()
     team = get_team(comp_id, user['id'])
     if team:
@@ -466,59 +473,6 @@ def competition_team_register_post(comp_id):
             return redirect('/competition/1')
 
 
-
-@app.route('/teamsign/<comp_id>')
-def teamsign(comp_id):
-    user = get_user()
-
-    render = render_template('teamsign.html', lang=lang,
-        user=user, comp_id=comp_id)
-    return make_response(render)
-
-@app.route('/teamsign/<comp_id>', methods=['POST'])
-def teamsignsubmit(comp_id):
-    if bleach.clean(request.form['check'], tags=[]) == 'newTeam':
-        try:
-            name = bleach.clean(request.form['name'], tags=[])
-        except KeyError:
-            return redirect('/error/form')
-        else:
-            teams = db['teams']
-            hash_team = hashlib.md5(name + "competicao" + str(comp_id)).hexdigest()
-            team = dict(
-                name=name,
-                hash=hash_team,
-                comp_id=comp_id
-            )
-            teams.insert(team)
-
-            id_team = teams.find_one(hash=hash_team)['id']
-            team_player = db['team_player']
-            team_player.insert(dict(id_team=id_team, id_user=session['user_id']))
-
-    elif bleach.clean(request.form['check'], tags=[]) == 'enterTeam':
-        try:
-            hash_team = bleach.clean(request.form['hash'], tags=[])
-        except KeyError:
-            return redirect('/error/form')
-        else:
-            team = db.query("SELECT * FROM teams WHERE hash = :hash_team AND comp_id = :comp_id", hash_team=hash_team, comp_id=comp_id)
-            team = list(team)
-
-            if len(team) == 0:
-                return redirect('/error/wrong_hash')
-            else:
-                team=team[0]
-                team_players = db.query("SELECT * FROM team_player WHERE id_team = :id_team", id_team=team['id'])
-                team_players = list(team_players)
-                if len(team_players) == 3:
-                    return redirect('/error/too_many_members')
-                else:
-                    team_playersDB = db['team_player']
-                    team_playersDB.insert(dict(id_team=team['id'], id_user= session['user_id']))
-
-    return redirect(url_for('competition', comp_id=comp_id))
-
 @app.route('/addcat/', methods=['GET'])
 @admin_required
 def addcat():
@@ -576,17 +530,23 @@ def addcompetitionsubmit():
 
 
 
-
-def store_filename(file):
+def generate_filename(file, task_id):
     filename, ext = os.path.splitext(file.filename)
     #hash current time for file name
-    filename = secure_filename(filename) + '_' + hashlib.md5(str(datetime.datetime.utcnow())).hexdigest()
+    #filename = secure_filename(filename) + '_' + hashlib.md5(str(datetime.datetime.utcnow())).hexdigest()
+    filename = secure_filename(filename)
+
     #if upload has extension, append to filename
     if ext:
         filename = filename + ext
 
-    file.save(os.path.join("static/files/", filename))
-    return filename
+
+def store_file(filename, task_id):
+    file.save(os.path.join("static/files/" + str(task_id) + "/", filename))
+
+
+def delete_file(filename, task_id):
+    os.remove(os.path.join("static/files/"+str(task_id)+"/", filename))
 
 
 
@@ -628,7 +588,7 @@ def task_add():
         file = request.files['task-file']
 
         if file:
-            task["file"] = store_filename(file)
+            task["file"] = store_filename(file, task['id'])
 
         tasks.insert(task)
 
@@ -662,11 +622,11 @@ def task_edit():
         file = request.files['task-file']
 
         if file:
-            filename = store_filename(file)
+            filename = store_filename(file, task['id'])
 
             #remove old file
             if task['file']:
-                os.remove(os.path.join("static/files/", task['file']))
+                delete_file(task['file'], task['id'])
 
             task["file"] = filename
 
@@ -686,7 +646,7 @@ def task_delete():
         return jsonify({ 'message': 'Task not found!' }), 400
 
     if task['file']:
-        os.remove(os.path.join("static/files/", task['file']))
+        delete_file(task['file'], task['id'])
     db['tasks'].delete(id=task_id)
     return jsonify({}), 200
 
