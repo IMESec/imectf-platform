@@ -17,10 +17,10 @@ sqlite3 ctf.db 'CREATE TABLE tasks (id INTEGER PRIMARY KEY, name TEXT, desc TEXT
 
 sqlite3 ctf.db 'CREATE TABLE task_competition (task_id INTEGER, comp_id INTEGER, score INTEGER, PRIMARY KEY (task_id, comp_id), FOREIGN KEY(task_id) REFERENCES tasks(id) ON DELETE CASCADE, FOREIGN KEY(comp_id) REFERENCES competitions(id) ON DELETE CASCADE);'
 
-sqlite3 ctf.db 'CREATE TABLE users (id INTEGER PRIMARY KEY, username TEXT NOT NULL, email TEXT, admin BOOLEAN, password TEXT)';
+sqlite3 ctf.db 'CREATE TABLE users (id INTEGER PRIMARY KEY, username TEXT NOT NULL, email TEXT, admin BOOLEAN, hidden BOOLEAN, password TEXT)';
 
-sqlite3 ctf.db 'CREATE TABLE teams (id INTEGER PRIMARY KEY, name TEXT NOT NULL, secret TEXT, comp_id INTEGER, spectator BOOLEAN, FOREIGN KEY(comp_id) REFERENCES competitions(id) ON DELETE CASCADE)';
+sqlite3 ctf.db 'CREATE TABLE teams (id INTEGER PRIMARY KEY, name TEXT NOT NULL, secret TEXT, comp_id INTEGER, spectator BOOLEAN, score INTEGER, timestamp BIGINT, FOREIGN KEY(comp_id) REFERENCES competitions(id) ON DELETE CASCADE)';
 
 sqlite3 ctf.db 'CREATE TABLE team_player (team_id INTEGER, user_id INTEGER, PRIMARY KEY (team_id, user_id), FOREIGN KEY(team_id) REFERENCES teams(id) ON DELETE CASCADE, FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE)';
 
-sqlite3 ctf.db 'CREATE TABLE flags (task_id INTEGER, user_id INTEGER, score INTEGER, timestamp BIGINT, ip TEXT, PRIMARY KEY (task_id, user_id), FOREIGN KEY(task_id) REFERENCES tasks(id) ON DELETE CASCADE, FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE);'
+sqlite3 ctf.db 'CREATE TABLE flags (task_id INTEGER, user_id INTEGER, comp_id INTEGER, timestamp BIGINT, PRIMARY KEY (task_id, user_id, comp_id), FOREIGN KEY(task_id) REFERENCES tasks(id) ON DELETE CASCADE, FOREIGN KEY(comp_id) REFERENCES competitions(id) ON DELETE CASCADE, FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE);'

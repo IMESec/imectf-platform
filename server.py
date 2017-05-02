@@ -146,6 +146,13 @@ def get_time_remaining(comp_id):
     return (endDate - datetime.utcnow()).total_seconds()
 
 
+def get_comp_score(comp_id):
+    if not get_competition(comp_id):
+        return 0
+
+    score_comp = list(db.query("SELECT total(score) FROM task_competition WHERE comp_id=:comp_id", comp_id=comp_id))[0]
+    return score_comp
+
 @app.route('/')
 def index():
     """Displays the main page"""
@@ -519,7 +526,9 @@ def create_team(name, comp_id, secret, spectator):
         name=name,
         comp_id=comp_id,
         secret=secret,
-        spectator=spectator
+        spectator=spectator,
+        score=0,
+        timestamp = int(time.time() * 1000)
     )
 
     return teams.insert(team)
@@ -820,32 +829,41 @@ def task_competition_get(cid, tid):
 
 
 
-@app.route('/submit/<comp_id>/<tid>/<flag>')
+@app.route('/submit/<comp_id>/<task_id>/<flag>')
 @login_required
-def submit(comp_id, tid, flag):
+def submit(comp_id, task_id, flag):
     """Handles the submission of flags"""
-
     user = get_user()
+    user_id = user["id"]
+    score_total = get_comp_score(comp_id)
 
-    task = get_task(comp_id, tid)
-    flags = get_flags()
-    task_done = task['id'] in flags
+    """ Get the other users on the team """
+    users_team = list(db.query("SELECT user_id FROM team_player WHERE team_id = (SELECT team_id FROM team_player WHERE user_id = :user_id) AND user_id != :user_id",user_id=user_id))
+    """ Get the users that solved the task """
+    users_solved = list(db.query("SELECT user_id FROM flags WHERE task_id=:task_id AND comp_id=:comp_id", task_id=task_id, comp_id=comp_id))
+    
+    """ Check if the same player already solved the task """
+    if {"user_id":user_id} in users_solved:
+        return jsonify({"success":True})
 
-    result = {'success': False}
-    if not task_done and task['flag'] == b64decode(flag):
-
-        timestamp = int(time.time() * 1000)
-        ip = request.remote_addr
-        print "flag submitter ip: {}".format(ip)
-
-        # Insert flag
-        new_flag = dict(task_id=task['id'], user_id=session['user_id'],
-            score=task["score"], timestamp=timestamp, ip=ip)
-        db['flags'].insert(new_flag)
-
-        result['success'] = True
-
-    return jsonify(result)
+    timestamp = int(time.time() * 1000)
+    """ Check if other person from the team solved the task """
+    solved = False
+    for user in users_team:
+        if user in users_solved:
+            solved = True
+    
+    if not solved:
+        team_id = list(db.query("SELECT team_id FROM team_player WHERE user_id=:user_id", user_id=user_id))[0]
+        team_id = team_id["team_id"]
+        score_team = list(db.query("SELECT score FROM teams WHERE id = :team_id AND comp_id=:comp_id",comp_id=comp_id, team_id=team_id, user_id=user_id))[0]
+        score_team = score_team["score"]
+        score_task = list(db.query("SELECT score FROM task_competition WHERE task_id=:task_id AND comp_id=:comp_id", task_id=task_id, comp_id=comp_id))[0]
+        score_task = score_task["score"]
+        score_team = score_team + score_task
+        db.query("UPDATE teams SET score = :score_team, timestamp = :timestamp WHERE id = :team_id", score_team=score_team, team_id=team_id, timestamp=timestamp)
+    db.query("INSERT INTO flags (task_id, user_id, comp_id, timestamp) VALUES (:task_id, :user_id, :comp_id, :timestamp)",task_id=task_id, comp_id=comp_id, user_id=user_id, timestamp=timestamp)
+    return jsonify({"succes":True,"comp_score":score_total})
 
 @app.route('/scoreboard/<comp_id>/')
 @login_required
@@ -853,13 +871,13 @@ def scoreboard(comp_id):
     """Displays the scoreboard"""
 
     user = get_user()
-    scores = db.query("select u.username, ifnull(sum(f.score), 0) as score, max(timestamp) as last_submit, t.competition FROM users u left join flags f ON u.id = f.user_id LEFT JOIN tasks t ON f.task_id = t.id where u.isHidden = 0 AND t.competition = :comp_id group by u.username order by score desc, last_submit asc", comp_id=comp_id)
-
-    scores = list(scores)
+    offset = 0
+    scores_10 = db.query("SELECT * FROM teams WHERE comp_id=:comp_id ORDER BY score DESC, timestamp ASC LIMIT 10 OFFSET :offset", comp_id=comp_id, offset=offset)
+    scores_10 = list(scores_10)
 
     # Render template
     render = render_template('frame.html', lang=lang, page='scoreboard.html',
-        user=user, scores=scores)
+            user=user, scores=scores_10)
     return make_response(render)
 
 
