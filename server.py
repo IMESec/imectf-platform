@@ -351,16 +351,20 @@ def competition_page(comp_id, page, **kwargs):
         return redirect('/error/competition_not_found')
 
     running = is_running(comp_id)
-    print running
 
     user = get_user()
     if not user:
         return redirect('/login')
 
     team = get_team(comp_id)
-
     if not team:
         return redirect('/competition/'+comp_id+'/team-register')
+
+    if not competition['active'] and not user['admin']:
+        return redirect('/error/competition_not_active')
+    if not running and not user['admin']:
+        return redirect('/competition/' + comp_id + '/countdown')
+
 
     categories = list(db['categories'].all())
 

@@ -75,7 +75,9 @@ $(function() {
     }
     var url = $(this).attr('action');
 
-    ajaxQuery(url, data, function(res) {});
+    ajaxQuery(url, data, function(res) {
+      window.location.reload(true);
+    });
 
     return false;
   });
