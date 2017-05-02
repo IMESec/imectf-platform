@@ -5,6 +5,12 @@
   <div class="competition-content-body">
     <div class="ui form">
       <div class="ui dividing header">{{ lang.stats.settings_header }}</div>
+      {% if user.admin %}
+      <div class="field">
+        <label>{{ lang.stats.active }}</label>
+        <span>{{ competition.active }}</span>
+      </div>
+      {% endif %}
       <div class="field">
         <label>{{ lang.stats.secret }}</label>
         <input type="text" value="{{ competition.secret }}" readonly="readonly">
@@ -14,9 +20,15 @@
         <input type="text" value="{{ competition.spectator_secret }}" readonly="readonly">
       </div>
       <div class="ui dividing header">{{ lang.stats.stats_header }}</div>
-      <div class="field">
-        <label>{{ lang.stats.competitor_count }}</label>
-        <span>10</span>
+      <div class="two fields">
+        <div class="field">
+          <label>{{ lang.stats.team_count }}</label>
+          <span>4</span>
+        </div>
+        <div class="field">
+          <label>{{ lang.stats.competitor_count }}</label>
+          <span>10</span>
+        </div>
       </div>
     </div>
   </div>

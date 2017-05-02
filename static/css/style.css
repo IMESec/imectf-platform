@@ -134,7 +134,6 @@ body {
   height: 100%;
   margin: 0 !important;
   background: #ddd;
-  overflow: auto;
 }
 
 .competition-content {
@@ -190,6 +189,7 @@ body {
   .competition-content-wrapper {
     height: 50%;
     width: 100%;
+    overflow: auto;
   }
 
   .competition-shell {
@@ -340,4 +340,10 @@ a.task-explorer.accepted > i.flag.icon {
 
 .tasks-table a:hover > .icon {
   color: white;
+}
+
+/* Countdown */
+.countdown-timer {
+  margin-left: auto !important;
+  margin-right: auto !important;
 }

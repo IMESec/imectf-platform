@@ -1,16 +1,9 @@
 {% extends 'frame.html' %}
 
-{% block scripts %}
-<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-<link rel="stylesheet" href="/resources/demos/style.css">
-<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
-<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-{% endblock scripts %}
-
 {% block page %}
 <div class="ui container main">
   <h1 class="ui inverted header">{{ lang.addcompetition.add_title }} </h1>
-  <form class="ui form segment" method="POST" enctype="multipart/form-data">
+  <form class="ui form segment" method="post">
     <div class="field">
       <label>{{ lang.addcompetition.name_label }}</label>
       <input name="name" type="text" required="required" class="form-control" />
@@ -18,17 +11,8 @@
 
     <div class="field">
       <label>{{ lang.addcompetition.description_label }}</label>
-      <textarea name="desc" type="text" class="form-control" rows="10"></textarea>
+      <textarea name="desc" rows="3"></textarea>
     </div>
-
-    <!--  <script>
-$( function() {
-            $( "#datepicker" ).datepicker({ dateFormat: 'dd/mm/yy' });
-          } );
-    </script>
-
-    <label>{{ lang.addcompetition.date_start }}</label>
-    <input name="date_start" type="text" id="datepicker" required="required" class="form-control" />-->
 
     <input type="submit" class="ui primary button" />
   </form>

@@ -1,6 +1,9 @@
 {% extends 'frame.html' %}
 
 {% block scripts %}
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/daterangepicker.min.css') }}">
+<script src="{{ url_for('static', filename='js/moment.js') }}"></script>
+<script src="{{ url_for('static', filename='js/daterangepicker.min.js') }}"></script>
 <script src="{{ url_for('static', filename='js/general.js') }}"></script>
 <script>
 $(function() {
@@ -34,6 +37,22 @@ $(function() {
       bindElements();
     });
   });
+
+  {% if running %}
+  function setTime() {
+    var d = moment.duration(moment('{{ competition.date_end }}', 'YYYY-MM-DD HH:mm').diff(moment().utc()));
+    $('#time').text(
+      (d.days() > 0 ? d.days() + ' d ' : '') +
+      d.hours() + ' h ' +
+      d.minutes() + ' m'
+    );
+  }
+
+  setTime();
+  setInterval(function() {
+    setTime();
+  }, 1000);
+  {% endif %}
 });
 </script>
 {% endblock scripts %}
@@ -56,7 +75,6 @@ $(function() {
               <div class="header">{{ lang.competition.admin }}</div>
             </div>
           </a>
-
 
           <div class="list accordion-content active">
 
@@ -103,6 +121,19 @@ $(function() {
               </div>
             </a>
 
+            {% if running -%}
+            <div class="item task-explorer">
+              <div class="right floated content team-name">
+                <div class="header" id="time"></div>
+              </div>
+
+              <i class="hourglass full icon"></i>
+
+              <div class="content">
+                <div class="header">{{ lang.competition.time }}</div>
+              </div>
+            </div>
+            {%- endif %}
 
             <a class="item task-explorer content-load" href="/competition/{{ competition.id }}/team">
               <div class="right floated content team-name">

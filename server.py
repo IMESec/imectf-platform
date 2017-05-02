@@ -7,10 +7,11 @@ import json
 import random
 import time
 import hashlib
-import datetime
 import os
 import dateparser
 import bleach
+import re
+from datetime import datetime
 
 from base64 import b64decode
 from functools import wraps
@@ -92,7 +93,7 @@ def get_task(comp_id, tid):
     return list(task)[0]
 
 
-def get_team(comp_id, user_id):
+def get_team(comp_id):
     user = get_user()
     if not user:
         return None
@@ -114,23 +115,35 @@ def get_flags():
     return [f['task_id'] for f in list(flags)]
 
 
-def get_dates(comp_id):
-    """Returns the end and start dates of current competition"""
+def get_competition(comp_id):
+    """Returns the current competition"""
 
-    dates = db['competitions'].find_one(id=comp_id)
-    return dates
+    competition = db['competitions'].find_one(id=comp_id)
+    return competition
 
 
-def check_running(comp_id):
+def is_running(comp_id):
     """   """
-    dates = get_dates(comp_id)
+    competition = get_competition(comp_id)
+    if competition['active'] == False:
+        return False
 
-    startDate = datetime.datetime.strptime(dates['date_start'], "%m-%d-%y %H:%M%p").date()
-    endDate = datetime.datetime.strptime(dates['date_end'], "%m-%d-%y %H:%M%p").date()
+    startDate = datetime.strptime(competition['date_start'], "%Y-%m-%d %H:%M")
+    endDate = datetime.strptime(competition['date_end'], "%Y-%m-%d %H:%M")
 
-    if datetime.datetime.today().date() > startDate:
-        if datetime.datetime.today().date() < endDate:
-            db.query('UPDATE competitions SET running=1 WHERE id=:comp_id', comp_id=comp_id)
+    if datetime.utcnow() > startDate and datetime.utcnow()< endDate:
+        return True
+        #db.query('UPDATE competitions SET running=1 WHERE id=:comp_id', comp_id=comp_id)
+
+
+def get_time_remaining(comp_id):
+    if not is_running(comp_id):
+        return None
+
+    competition = get_competition(comp_id)
+    endDate = datetime.strptime(competition['date_end'], "%Y-%m-%d %H:%M")
+
+    return (endDate - datetime.utcnow()).total_seconds()
 
 
 @app.route('/')
@@ -181,9 +194,12 @@ def login_page():
 @app.route('/login', methods = ['POST'])
 def login():
     from werkzeug.security import check_password_hash
+    from werkzeug.security import generate_password_hash
 
-    username = request.form['username']
-    password = request.form['password']
+    username = bleach.clean(request.form['username'], tags=[])
+    password = bleach.clean(request.form['password'], tags=[])
+    if not username:
+        return redirect('/error/empty_user')
 
     if 'login-button' in request.form:
         """Attempts to log the user in"""
@@ -199,14 +215,6 @@ def login():
 
     if 'register-button' in request.form:
         """Attempts to register a new user"""
-
-        from werkzeug.security import generate_password_hash
-
-        username = request.form['username']
-        password = request.form['password']
-
-        if not username:
-            return redirect('/error/empty_user')
 
         user_found = db['users'].find_one(username=username)
         if user_found:
@@ -342,11 +350,14 @@ def competition_page(comp_id, page, **kwargs):
     if not competition:
         return redirect('/error/competition_not_found')
 
+    running = is_running(comp_id)
+    print running
+
     user = get_user()
     if not user:
         return redirect('/login')
 
-    team = get_team(comp_id, user['id'])
+    team = get_team(comp_id)
 
     if not team:
         return redirect('/competition/'+comp_id+'/team-register')
@@ -358,7 +369,8 @@ def competition_page(comp_id, page, **kwargs):
 
     render = render_template('competition.html', lang=lang,
                              user=user, competition=competition, categories=categories,
-                             tasks=tasks, page=page, team=team, **kwargs)
+                             tasks=tasks, page=page, team=team, running=running,
+                             **kwargs)
     return make_response(render)
 
 
@@ -377,8 +389,9 @@ def competition_stats(comp_id):
 @app.route('/competition/<comp_id>/stats', methods=['POST'])
 @login_required
 def competition_stats_post(comp_id):
+    user = get_user()
     competition = db['competitions'].find_one(id=comp_id)
-    render = render_template('competition-stats.html', lang=lang, competition=competition)
+    render = render_template('competition-stats.html', lang=lang, user=user, competition=competition)
     return render, 200
 
 
@@ -396,6 +409,37 @@ def competition_launch_post(comp_id):
     return render, 200
 
 
+@app.route('/competition/<comp_id>/launch/submit', methods=['POST'])
+@admin_required
+def competition_launch_submit(comp_id):
+    """ Attempts to save competition and launch """
+    competitions = db['competitions']
+    competition = competitions.find_one(id=comp_id)
+    if not competition:
+        return redirect('/error/competition_not_found')
+
+    try:
+        name = bleach.clean(request.form['name'], tags=[])
+        desc = bleach.clean(request.form['desc'], tags=descAllowedTags)
+        date_start = request.form['date-start']
+        date_end   = request.form['date-end']
+    except KeyError:
+        return redirect('/error/form')
+    else:
+        competition['name']       = name or competition['name']
+        competition['desc']       = desc or competition['desc']
+        competition['active']     = competition['active'] or ('launch-button' in request.form)
+        competition['date_start'] = date_start or competition['date_start']
+        competition['date_end']   = date_end   or competition['date_end']
+
+        competitions.update(competition, ['id'])
+
+        competition = competitions.find_one(id=comp_id)
+        return jsonify(competition), 200
+
+    return jsonify({}), 200
+
+
 @app.route('/competition/<comp_id>/task/<task_id>', methods=['GET'])
 @login_required
 def competition_task(comp_id, task_id):
@@ -407,7 +451,7 @@ def competition_task(comp_id, task_id):
 @login_required
 def competition_task_post(comp_id, task_id):
     user = get_user()
-    if get_team(comp_id, user['id']) is None:
+    if get_team(comp_id) is None:
         return jsonify({}), 400
 
     task = db['tasks'].find_one(id=task_id)
@@ -425,7 +469,7 @@ def competition_team(comp_id):
 @login_required
 def competition_team_post(comp_id):
     user = get_user()
-    team = get_team(comp_id, user['id'])
+    team = get_team(comp_id)
     if not team:
         return jsonify({}), 400
 
@@ -441,7 +485,7 @@ def competition_team_register(comp_id):
         return redirect('/error/competition_not_found')
 
     user = get_user()
-    team = get_team(comp_id, user['id'])
+    team = get_team(comp_id)
     if team:
         return redirect('/competition/'+comp_id+'/team')
 
@@ -486,7 +530,7 @@ def competition_team_register_post(comp_id):
             team_id = create_team(
                 name,
                 comp_id,
-                hashlib.md5(str(datetime.datetime.utcnow())).hexdigest(),
+                hashlib.md5(str(datetime.utcnow())).hexdigest(),
                 spectator
             )
 
@@ -521,6 +565,26 @@ def competition_team_register_post(comp_id):
             return redirect('/competition/1')
 
 
+@app.route('/competition/<comp_id>/countdown')
+@login_required
+def competition_countdown(comp_id):
+    user = get_user()
+    competition = get_competition(comp_id)
+
+    if not competition:
+        return redirect('/error/competition_not_found')
+    if not competition['active']:
+        return redirect('/error/competition_not_active')
+
+    date_start = datetime.strptime(competition['date_start'], '%Y-%m-%d %H:%M')
+    diff = (date_start - datetime.utcnow()).total_seconds()
+
+    if diff <= 0:
+        return redirect('/competition/' + comp_id)
+
+    render = render_template('competition-countdown.html', lang=lang,
+                             user=user, competition=competition, diff=diff)
+    return make_response(render), 200
 
 
 
@@ -569,20 +633,16 @@ def competition_new_submit():
     try:
         name = bleach.clean(request.form['name'], tags=descAllowedTags)
         desc = bleach.clean(request.form['desc'], tags=descAllowedTags)
-        #date_start = bleach.clean(request.form['date_start'])
     except KeyError:
         return redirect('/error/form')
-
     else:
-
         competitions = db['competitions']
         competition = dict(
             name=name,
             desc=desc,
             active=0,
-            secret = hashlib.md5('secret'+str(datetime.datetime.utcnow())).hexdigest(),
-            spectator_secret = hashlib.md5('spectator'+str(datetime.datetime.utcnow())).hexdigest(),
-            #date_start=date_start
+            secret = hashlib.md5('secret'+str(datetime.utcnow())).hexdigest(),
+            spectator_secret = hashlib.md5('spectator'+str(datetime.utcnow())).hexdigest(),
             )
 
         competitions.insert(competition)
@@ -590,23 +650,25 @@ def competition_new_submit():
         return redirect('/competitions')
 
 
-def generate_filename(file, task_id):
+def generate_filename(file):
     filename, ext = os.path.splitext(file.filename)
     #hash current time for file name
-    #filename = secure_filename(filename) + '_' + hashlib.md5(str(datetime.datetime.utcnow())).hexdigest()
-    filename = secure_filename(filename)
+    filename = secure_filename(filename) + '_' + hashlib.md5(str(datetime.utcnow())).hexdigest()
 
     #if upload has extension, append to filename
     if ext:
         filename = filename + ext
+    return filename
 
 
-def store_file(filename, task_id):
-    file.save(os.path.join("static/files/" + str(task_id) + "/", filename))
+def store_file(file):
+    filename = generate_filename(file)
+    file.save(os.path.join("static/files/", filename))
+    return filename
 
 
-def delete_file(filename, task_id):
-    os.remove(os.path.join("static/files/"+str(task_id)+"/", filename))
+def delete_file(filename):
+    os.remove(os.path.join("static/files/", filename))
 
 
 
@@ -648,7 +710,8 @@ def task_add():
         file = request.files['task-file']
 
         if file:
-            task["file"] = store_filename(file, task['id'])
+            task['file'] = store_file(file)
+            #tasks.update(task, ['id'])
 
         task_id = tasks.insert(task)
 
@@ -682,17 +745,17 @@ def task_edit():
         file = request.files['task-file']
 
         if file:
-            filename = store_filename(file, task['id'])
+            filename = store_file(file)
 
             #remove old file
             if task['file']:
-                delete_file(task['file'], task['id'])
+                delete_file(task['file'])
 
             task["file"] = filename
 
         tasks.update(task, ['id'])
         task = tasks.find_one(name = task["name"], flag = task["flag"])
-        return jsonify(task)
+        return jsonify(task), 200
 
 
 @app.route('/task/delete', methods=['POST'])
@@ -706,7 +769,8 @@ def task_delete():
         return jsonify({ 'message': 'Task not found!' }), 400
 
     if task['file']:
-        delete_file(task['file'], task['id'])
+        delete_file(task['file'])
+
     db['tasks'].delete(id=task_id)
     return jsonify({}), 200
 
@@ -823,6 +887,11 @@ def about():
     render = render_template('frame.html', lang=lang, page='about.html',
         user=user)
     return make_response(render)
+
+""" Filters """
+@app.template_filter('date')
+def format_date(date):
+    return datetime.strptime(date, '%Y-%m-%d %H:%M').strftime('%d/%m/%Y %H:%M')
 
 
 """Initializes the database and sets up the language"""

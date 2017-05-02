@@ -20,7 +20,7 @@
     </div>
     {% endif %}
     {% if task.file %}
-    <span><strong>{{ lang.competition.file }}:</strong> <a href="{{ url_for('static', filename='files/' + task.id|string + '/' + task.file) }}">{{ task.file }}</a></span>
+    <span><strong>{{ lang.competition.file }}:</strong> <a href="{{ url_for('static', filename='files/' + task.file) }}">{{ task.file }}</a></span>
     {% endif %}
 
     <div class="ui horizontal divider">

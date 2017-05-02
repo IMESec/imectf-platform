@@ -86,6 +86,7 @@
       "deploy": "Launch in 3...",
 
       "competition": "Competition",
+      "time": "Time Remaining",
       "stats": "Statistics",
       "team": "Team",
       "leaderboard": "Leaderboard",
@@ -95,19 +96,21 @@
     },
     "stats": {
       "settings_header": "Settings",
+      "active": "Active",
       "secret": "Competitor Secret",
       "spectator_secret": "Spectator Secret",
       "stats_header": "Statistics",
-      "competitor_count": "# of Competitors"
+      "competitor_count": "# of Competitors",
+      "team_count": "# of Teams"
     },
     "launch": {
       "header": "Launch Competition",
       "name": "Name",
       "description": "Description",
-      "date_start": "Start date",
-      "date_end": "End date",
+      "date_range": "Date range",
       "secret": "Competitor Secret",
       "spectator_secret": "Spectator Secret",
+      "active": "Active",
       "save": "Save",
       "launch": "Launch"
     },

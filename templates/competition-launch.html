@@ -3,22 +3,18 @@
     <h2 class="ui center aligned header">{{ lang.launch.header }}</h2>
   </div>
   <div class="competition-content-body">
-    <div class="ui form">
+    <form id="launch-form" class="ui form" action="/competition/{{ competition.id }}/launch/submit" method='post'>
       <div class="field">
         <label>{{ lang.launch.name }}</label>
-        <input type="text" value="{{ competition.name }}">
+        <input name="name" type="text" value="{{ competition.name }}">
       </div>
       <div class="field">
         <label>{{ lang.launch.description }}</label>
-        <textarea row=3>{{ competition.desc }}</textarea>
+        <textarea name="desc" rows="3">{{ competition.desc }}</textarea>
       </div>
       <div class="field">
-        <label>{{ lang.launch.date_start }}</label>
-        <input type="text" value="{{ competition.date_start }}">
-      </div>
-      <div class="field">
-        <label>{{ lang.launch.date_end }}</label>
-        <input type="text" value="{{ competition.date_end }}">
+        <label>{{ lang.launch.date_range }}</label>
+        <input name="date-range" type="text">
       </div>
       <div class="field">
         <label>{{ lang.launch.secret }}</label>
@@ -28,12 +24,60 @@
         <label>{{ lang.launch.spectator_secret }}</label>
         <input type="text" value="{{ competition.spectator_secret }}" disabled>
       </div>
+      <div class="field">
+        <label>{{ lang.launch.active }}</label>
+        <span>{{ competition.active }}</span>
+      </div>
 
-      <a class="ui primary right floated labeled icon button">
+      <div class="ui divider"></div>
+
+      <button name="launch-button" type="submit" class="ui primary right floated labeled icon button">
         <i class="rocket icon"></i>
         {{ lang.launch.launch }}
-      </a>
-      <a class="ui right floated positive button">{{ lang.launch.save }}</a>
-    </div>
+      </button>
+      <button name="save-button" type="submit" class="ui right floated positive button">
+        {{ lang.launch.save }}
+      </button>
+    </form>
   </div>
 </div>
+<script>
+$(function() {
+  $('input[name=date-range]').daterangepicker({
+    timePicker: true,
+    timePicker12Hour: false,
+    timePickerIncrement: 5,
+    format: "DD/MM/YYYY HH:mm"
+  });
+
+  {% if competition.date_start and competition.date_end -%}
+  $('input[name=date-range]').data('daterangepicker').setStartDate(moment.utc('{{ competition.date_start }}', 'YYYY-MM-DD HH:mm').local());
+  $('input[name=date-range]').data('daterangepicker').setEndDate(moment.utc('{{ competition.date_end }}', 'YYYY-MM-DD HH:mm').local());
+  $('input[name=date-range]')
+    .val(
+      moment.utc('{{ competition.date_start }}', 'YYYY-MM-DD HH:mm').local().format('DD/MM/YYYY HH:mm') +
+      ' - ' +
+      moment.utc('{{ competition.date_end }}', 'YYYY-MM-DD HH:mm').local().format('DD/MM/YYYY HH:mm')
+    )
+  {%- endif %}
+
+  $('#launch-form').submit(function(event) {
+    event.preventDefault();
+
+    var data = new FormData($('#launch-form')[0]);
+    var date_range = $(this).find('[name=date-range]').val();
+    if (date_range) {
+      date_start = date_range.split(" - ")[0]
+      date_end = date_range.split(" - ")[1]
+
+      data.append('date-start', moment(date_start, "DD-MM-YYYY HH:mm").utc().format('YYYY-MM-DD HH:mm'));
+      data.append('date-end',   moment(date_end, "DD-MM-YYYY HH:mm").utc().format('YYYY-MM-DD HH:mm'));
+    }
+    var url = $(this).attr('action');
+
+    ajaxQuery(url, data, function(res) {});
+
+    return false;
+  });
+});
+</script>
