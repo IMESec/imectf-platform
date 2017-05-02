@@ -70,6 +70,11 @@ def get_user():
 
     return None
 
+def get_comp_score(comp_id):
+
+    score_comp = list(db.query("SELECT total(score) FROM task_competition WHERE comp_id=:comp_id", comp_id=comp_id))[0]
+    return score_comp
+
 def get_task(comp_id, tid):
     """Finds a task with a given category and score"""
 
@@ -619,6 +624,7 @@ def submit(comp_id, task_id, flag):
     """Handles the submission of flags"""
     user = get_user()
     user_id = user["id"]
+    score_total = get_comp_score(comp_id)
 
     """ Get the other users on the team """
     users_team = list(db.query("SELECT user_id FROM team_player WHERE team_id = (SELECT team_id FROM team_player WHERE user_id = :user_id) AND user_id != :user_id",user_id=user_id))
@@ -646,7 +652,7 @@ def submit(comp_id, task_id, flag):
         score_team = score_team + score_task
         db.query("UPDATE teams SET score = :score_team, timestamp = :timestamp WHERE id = :team_id", score_team=score_team, team_id=team_id, timestamp=timestamp)
     db.query("INSERT INTO flags (task_id, user_id, comp_id, timestamp) VALUES (:task_id, :user_id, :comp_id, :timestamp)",task_id=task_id, comp_id=comp_id, user_id=user_id, timestamp=timestamp)
-    return jsonify({"succes":True})
+    return jsonify({"succes":True,"comp_score":score_total})
 
 @app.route('/scoreboard/<comp_id>/')
 @login_required
