@@ -444,6 +444,21 @@ def competition_launch_submit(comp_id):
     return jsonify({}), 200
 
 
+@app.route('/competition/<comp_id>/leaderboard', methods=['GET'])
+@login_required
+def competition_leaderboard(comp_id):
+    return competition_page(comp_id, 'competition-leaderboard.html')
+
+
+@app.route('/competition/<comp_id>/leaderboard', methods=['POST'])
+@login_required
+def competition_leaderboard_post(comp_id):
+    user = get_user()
+    competition = db['competitions'].find_one(id=comp_id)
+    render = render_template('competition-leaderboard.html', lang=lang, user=user, competition=competition)
+    return render, 200
+
+
 @app.route('/competition/<comp_id>/task/<task_id>', methods=['GET'])
 @login_required
 def competition_task(comp_id, task_id):

@@ -83,7 +83,7 @@
 
       "admin": "Admin",
       "settings": "Edit Competition",
-      "deploy": "Launch in 3...",
+      "launch": "Launch in 3...",
 
       "competition": "Competition",
       "time": "Time Remaining",
@@ -102,6 +102,12 @@
       "stats_header": "Statistics",
       "competitor_count": "# of Competitors",
       "team_count": "# of Teams"
+    },
+    "leaderboard": {
+      "header": "Leaderboard",
+      "rank": "Rank",
+      "team": "Team",
+      "score": "Score"
     },
     "launch": {
       "header": "Launch Competition",
