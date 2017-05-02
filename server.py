@@ -654,13 +654,13 @@ def scoreboard(comp_id):
     """Displays the scoreboard"""
 
     user = get_user()
-    scores = db.query("select u.username, ifnull(sum(f.score), 0) as score, max(timestamp) as last_submit, t.competition FROM users u left join flags f ON u.id = f.user_id LEFT JOIN tasks t ON f.task_id = t.id where u.isHidden = 0 AND t.competition = :comp_id group by u.username order by score desc, last_submit asc", comp_id=comp_id)
-
-    scores = list(scores)
+    offset = 0
+    scores_10 = db.query("SELECT * FROM teams WHERE comp_id=:comp_id ORDER BY score DESC, timestamp ASC LIMIT 10 OFFSET :offset", comp_id=comp_id, offset=offset)
+    scores_10 = list(scores_10)
 
     # Render template
     render = render_template('frame.html', lang=lang, page='scoreboard.html',
-        user=user, scores=scores)
+            user=user, scores=scores_10)
     return make_response(render)
 
 
