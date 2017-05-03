@@ -61,25 +61,42 @@ $(function() {
     )
   {%- endif %}
 
-  $('#launch-form').submit(function(event) {
-    event.preventDefault();
-
+  var get_data = function() {
     var data = new FormData($('#launch-form')[0]);
-    var date_range = $(this).find('[name=date-range]').val();
+    var date_range = $('#launch-form').find('[name=date-range]').val();
     if (date_range) {
       date_start = date_range.split(" - ")[0]
       date_end = date_range.split(" - ")[1]
 
       data.append('date-start', moment(date_start, "DD-MM-YYYY HH:mm").utc().format('YYYY-MM-DD HH:mm'));
       data.append('date-end',   moment(date_end, "DD-MM-YYYY HH:mm").utc().format('YYYY-MM-DD HH:mm'));
+      data.delete('date-range')
     }
-    var url = $(this).attr('action');
+    return data
+  }
+
+  $('button[name=save-button]').on('click', function() {
+    var data = get_data();
+    data.append('save-button', 1);
+    var url = $('#launch-form').attr('action');
 
     ajaxQuery(url, data, function(res) {
       window.location.reload(true);
     });
+  });
 
-    return false;
+  $('button[name=launch-button]').on('click', function() {
+    var data = get_data();
+    data.append('launch-button', 1);
+    var url = $('#launch-form').attr('action');
+
+    ajaxQuery(url, data, function(res) {
+      window.location.reload(true);
+    });
+  });
+
+  $('#launch-form').submit(function(event) {
+    event.preventDefault();
   });
 });
 </script>

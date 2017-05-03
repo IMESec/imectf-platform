@@ -85,12 +85,20 @@ def get_user():
     return None
 
 
-def get_task(comp_id, tid):
+def get_task(comp_id, task_id):
     """Finds a task with a given category and score"""
 
-    task = db.query("SELECT t.*, c.name cat_name FROM tasks t JOIN categories c on c.id = t.category JOIN competitions comp ON comp.id=t.competition WHERE t.id = :tid AND t.competition = :comp_id",
-                    tid=tid, comp_id=comp_id)
-    return list(task)[0]
+    task = list(db.query(
+        '''
+        SELECT * FROM tasks t JOIN task_competition tc
+        ON t.id = tc.task_id
+        WHERE t.id = :task_id AND tc.comp_id = :comp_id
+        ''',
+        task_id = task_id, comp_id = comp_id))
+
+    if len(task) == 0:
+        return None
+    return task[0]
 
 
 def get_team(comp_id):
@@ -150,8 +158,82 @@ def get_comp_score(comp_id):
     if not get_competition(comp_id):
         return 0
 
-    score_comp = list(db.query("SELECT total(score) FROM task_competition WHERE comp_id=:comp_id", comp_id=comp_id))[0]
-    return score_comp
+    score_comp = list(db.query("SELECT ifnull(total(score), 0) as score FROM task_competition WHERE comp_id=:comp_id", comp_id=comp_id))[0]
+    return int(score_comp['score'])
+
+
+'''
+def recalculate_teams_score(comp_id):
+    if not get_competition(comp_id):
+        return 0
+'''
+
+
+def get_tasks_done(team_id, comp_id):
+    flags = list(db.query(
+        '''
+        SELECT f.task_id
+        FROM flags f JOIN team_player tp JOIN teams t
+        ON f.user_id = tp.user_id AND tp.team_id = t.id
+        WHERE f.comp_id = :comp_id AND t.id = :team_id
+        ''',
+        comp_id=comp_id, team_id=team_id
+    ))
+    flags = [x['task_id'] for x in flags]
+    return flags
+
+
+def get_team_scoreboard(comp_id, offset):
+    scores = list(db.query(
+        '''
+        SELECT t.*,
+        (
+        SELECT count(*)+1
+        FROM teams t2
+        WHERE t2.id != t.id AND t2.spectator = 0 AND (t2.score > t.score OR (t2.score == t.score AND t2.timestamp <= t.timestamp))
+        ) as rank
+        FROM teams as t
+        WHERE comp_id=:comp_id AND t.spectator = 0
+        ORDER BY score DESC, timestamp ASC
+        LIMIT 10
+        OFFSET :offset
+        ''',
+        comp_id=comp_id, offset=offset
+    ))
+
+    return scores
+
+
+def get_team_rank(comp_id, team_id):
+    rank = list(db.query(
+        '''
+        SELECT
+        (
+        SELECT count(*)+1
+        FROM teams t2
+        WHERE t.id != t2.id AND t2.spectator = 0 AND (t2.score > t.score OR (t2.score == t.score AND t2.timestamp <= t.timestamp))
+        ) as rank
+        FROM teams t
+        WHERE comp_id=:comp_id AND t.id = :team_id AND t.spectator = 0
+        ''',
+        comp_id=comp_id, team_id=team_id
+    ))
+    if len(rank) == 0:
+        return 0
+    return rank[0]['rank']
+
+
+def get_total_users(comp_id):
+    users = list(db.query(
+        '''
+        SELECT ifnull(count(*), 0) as count
+        FROM users u JOIN team_player tp JOIN teams t
+        ON u.id = tp.user_id AND tp.team_id = t.id
+        WHERE t.spectator = 0 AND t.comp_id = :comp_id
+        ''',
+        comp_id=comp_id
+    ))
+    return users[0]['count']
 
 @app.route('/')
 def index():
@@ -357,8 +439,6 @@ def competition_page(comp_id, page, **kwargs):
     if not competition:
         return redirect('/error/competition_not_found')
 
-    running = is_running(comp_id)
-
     user = get_user()
     if not user:
         return redirect('/login')
@@ -367,11 +447,17 @@ def competition_page(comp_id, page, **kwargs):
     if not team:
         return redirect('/competition/'+comp_id+'/team-register')
 
+    running = is_running(comp_id)
+
     if not competition['active'] and not user['admin']:
         return redirect('/error/competition_not_active')
     if not running and not user['admin']:
         return redirect('/competition/' + comp_id + '/countdown')
 
+    total_score = get_comp_score(comp_id)
+    tasks_done = get_tasks_done(team['id'], comp_id)
+
+    rank = get_team_rank(comp_id, team['id'])
 
     categories = list(db['categories'].all())
 
@@ -381,7 +467,8 @@ def competition_page(comp_id, page, **kwargs):
     render = render_template('competition.html', lang=lang,
                              user=user, competition=competition, categories=categories,
                              tasks=tasks, page=page, team=team, running=running,
-                             **kwargs)
+                             total_score=total_score, tasks_done=tasks_done,
+                             rank=rank, **kwargs)
     return make_response(render)
 
 
@@ -394,15 +481,18 @@ def competition(comp_id):
 @app.route('/competition/<comp_id>/stats', methods=['GET'])
 @login_required
 def competition_stats(comp_id):
-    return competition_page(comp_id, 'competition-stats.html')
+    users = get_total_users(comp_id)
+
+    return competition_page(comp_id, 'competition-stats.html', users=users)
 
 
 @app.route('/competition/<comp_id>/stats', methods=['POST'])
 @login_required
 def competition_stats_post(comp_id):
     user = get_user()
-    competition = db['competitions'].find_one(id=comp_id)
-    render = render_template('competition-stats.html', lang=lang, user=user, competition=competition)
+    competition = get_competition(comp_id)
+    users = get_total_users(comp_id)
+    render = render_template('competition-stats.html', lang=lang, user=user, competition=competition, users=users)
     return render, 200
 
 
@@ -435,7 +525,7 @@ def competition_launch_submit(comp_id):
         date_start = request.form['date-start']
         date_end   = request.form['date-end']
     except KeyError:
-        return redirect('/error/form')
+        return jsonify({}), 400
     else:
         competition['name']       = name or competition['name']
         competition['desc']       = desc or competition['desc']
@@ -454,34 +544,65 @@ def competition_launch_submit(comp_id):
 @app.route('/competition/<comp_id>/leaderboard', methods=['GET'])
 @login_required
 def competition_leaderboard(comp_id):
-    return competition_page(comp_id, 'competition-leaderboard.html')
+    return redirect('/competition/' + comp_id + '/leaderboard/0')
 
 
-@app.route('/competition/<comp_id>/leaderboard', methods=['POST'])
+@app.route('/competition/<int:comp_id>/leaderboard/<int:offset>', methods=['GET'])
 @login_required
-def competition_leaderboard_post(comp_id):
+def competition_leaderboard_offset(comp_id, offset):
+    scores = get_team_scoreboard(comp_id, offset*10)
+    return competition_page(comp_id, 'competition-leaderboard.html', scores=scores, offset=offset)
+
+
+@app.route('/competition/<int:comp_id>/leaderboard/<int:offset>', methods=['POST'])
+@login_required
+def competition_leaderboard_offset_post(comp_id, offset):
     user = get_user()
+    team = get_team(comp_id)
+    if not team:
+        return jsonify({}), 400
+
     competition = db['competitions'].find_one(id=comp_id)
-    render = render_template('competition-leaderboard.html', lang=lang, user=user, competition=competition)
+    scores = get_team_scoreboard(comp_id, offset*10)
+    render = render_template('competition-leaderboard.html', lang=lang, user=user,
+                             competition=competition, scores=scores, team=team, offset=offset)
     return render, 200
 
 
 @app.route('/competition/<comp_id>/task/<task_id>', methods=['GET'])
 @login_required
 def competition_task(comp_id, task_id):
+    team = get_team(comp_id)
+    if not team:
+        return jsonify({}), 400
+
     task = db['tasks'].find_one(id=task_id)
-    return competition_page(comp_id, 'competition-task.html', task=task)
+
+    tasks_done = get_tasks_done(team['id'], comp_id)
+    done = False
+    if task['id'] in tasks_done:
+        done = True
+    return competition_page(comp_id, 'competition-task.html', task=task, done=done)
 
 
 @app.route('/competition/<comp_id>/task/<task_id>', methods=['POST'])
 @login_required
 def competition_task_post(comp_id, task_id):
     user = get_user()
-    if get_team(comp_id) is None:
+    team = get_team(comp_id)
+    if not team:
         return jsonify({}), 400
 
     task = db['tasks'].find_one(id=task_id)
-    render = render_template('competition-task.html', lang=lang, task=task)
+    competition = get_competition(comp_id)
+
+    tasks_done = get_tasks_done(team['id'], comp_id)
+    done = False
+    if task['id'] in tasks_done:
+        done = True
+
+    render = render_template('competition-task.html', lang=lang,
+                             task=task, competition=competition, done=done)
     return render, 200
 
 
@@ -498,15 +619,20 @@ def competition_team_post(comp_id):
     team = get_team(comp_id)
     if not team:
         return jsonify({}), 400
+    total_score = get_comp_score(comp_id)
+    rank = get_team_rank(comp_id, team['id'])
+    competition = get_competition(comp_id)
 
-    render = render_template('competition-team.html', lang=lang, team=team)
+    render = render_template('competition-team.html', lang=lang,
+                             team=team, total_score=total_score, rank=rank,
+                             competition=competition)
     return make_response(render), 200
 
 
 @app.route('/competition/<comp_id>/team-register', methods=['GET'])
 @login_required
 def competition_team_register(comp_id):
-    competition = db['competitions'].find_one(id=comp_id)
+    competition = get_competition(comp_id)
     if not competition:
         return redirect('/error/competition_not_found')
 
@@ -528,7 +654,7 @@ def create_team(name, comp_id, secret, spectator):
         secret=secret,
         spectator=spectator,
         score=0,
-        timestamp = int(time.time() * 1000)
+        timestamp = 0
     )
 
     return teams.insert(team)
@@ -539,12 +665,14 @@ def create_team(name, comp_id, secret, spectator):
 def competition_team_register_post(comp_id):
     secret = request.form['secret']
 
-    competition = db['competitions'].find_one(id=comp_id)
+    competition = get_competition(comp_id)
+    if not competition:
+        return redirect('/error/competition_not_found')
 
     if secret != competition['secret'] and secret != competition['spectator_secret']:
         return redirect('/error/incorrect_secret')
 
-    spectator = secret == competition['spectator_secret']
+    spectator = (secret == competition['spectator_secret'])
 
     if 'register-button' in request.form:
         try:
@@ -564,6 +692,12 @@ def competition_team_register_post(comp_id):
 
             team_player = db['team_player']
             team_player.insert(dict(team_id=team_id, user_id=session['user_id']))
+
+            if not spectator:
+                competition = get_competition(comp_id)
+                competition['teams'] += 1
+
+            db['competitions'].update(competition, ['id'])
 
             #return redirect('/competitions')
             return redirect('/competition/1')
@@ -618,7 +752,7 @@ def competition_countdown(comp_id):
 
 
 
-
+'''
 @app.route('/addcat/', methods=['GET'])
 @admin_required
 def addcat():
@@ -638,6 +772,7 @@ def addcatsubmit():
         categories.insert(dict(name=name))
 
         return redirect('/competitions')
+'''
 
 
 
@@ -671,7 +806,8 @@ def competition_new_submit():
             active=0,
             secret = hashlib.md5('secret'+str(datetime.utcnow())).hexdigest(),
             spectator_secret = hashlib.md5('spectator'+str(datetime.utcnow())).hexdigest(),
-            )
+            teams=0
+        )
 
         competitions.insert(competition)
 
@@ -822,92 +958,78 @@ def task_competition_get(cid, tid):
     return jsonify(task[0]), 200
 
 
-
-
-
-
-
-
-
-@app.route('/submit/<comp_id>/<task_id>/<flag>')
+@app.route('/competition/<int:comp_id>/task/<int:task_id>/submit', methods=['POST'])
 @login_required
-def submit(comp_id, task_id, flag):
+def submit(comp_id, task_id):
     """Handles the submission of flags"""
+    competition = get_competition(comp_id)
+    if not competition:
+        return jsonify({}), 400
+
+    task = get_task(comp_id, task_id)
+    if not task:
+        return jsonify({}), 400
+    task_id = task['id']
+
+    team = get_team(comp_id)
+    if not team:
+        return jsonify({}), 400
+    team_id = team['id']
+
+    # Verify if flag is correct
+    flag = request.form['flag']
+    if task['flag'] != flag:
+        return jsonify({ 'success': False }), 200
+
     user = get_user()
     user_id = user["id"]
-    score_total = get_comp_score(comp_id)
-
-    """ Get the other users on the team """
-    users_team = list(db.query("SELECT user_id FROM team_player WHERE team_id = (SELECT team_id FROM team_player WHERE user_id = :user_id) AND user_id != :user_id",user_id=user_id))
-    """ Get the users that solved the task """
-    users_solved = list(db.query("SELECT user_id FROM flags WHERE task_id=:task_id AND comp_id=:comp_id", task_id=task_id, comp_id=comp_id))
-    
-    """ Check if the same player already solved the task """
-    if {"user_id":user_id} in users_solved:
-        return jsonify({"success":True})
-
     timestamp = int(time.time() * 1000)
-    """ Check if other person from the team solved the task """
-    solved = False
-    for user in users_team:
-        if user in users_solved:
-            solved = True
-    
-    if not solved:
-        team_id = list(db.query("SELECT team_id FROM team_player WHERE user_id=:user_id", user_id=user_id))[0]
-        team_id = team_id["team_id"]
-        score_team = list(db.query("SELECT score FROM teams WHERE id = :team_id AND comp_id=:comp_id",comp_id=comp_id, team_id=team_id, user_id=user_id))[0]
-        score_team = score_team["score"]
-        score_task = list(db.query("SELECT score FROM task_competition WHERE task_id=:task_id AND comp_id=:comp_id", task_id=task_id, comp_id=comp_id))[0]
-        score_task = score_task["score"]
-        score_team = score_team + score_task
-        db.query("UPDATE teams SET score = :score_team, timestamp = :timestamp WHERE id = :team_id", score_team=score_team, team_id=team_id, timestamp=timestamp)
-    db.query("INSERT INTO flags (task_id, user_id, comp_id, timestamp) VALUES (:task_id, :user_id, :comp_id, :timestamp)",task_id=task_id, comp_id=comp_id, user_id=user_id, timestamp=timestamp)
-    return jsonify({"succes":True,"comp_score":score_total})
 
-@app.route('/scoreboard/<comp_id>/')
-@login_required
-def scoreboard(comp_id):
-    """Displays the scoreboard"""
+    # Verify if player didn't solved this task yet
+    user_solved = list(db.query('SELECT * FROM flags WHERE task_id = :task_id AND user_id = :user_id AND comp_id = :comp_id',
+                           task_id = task_id, user_id = user_id, comp_id = comp_id))
 
-    user = get_user()
-    offset = 0
-    scores_10 = db.query("SELECT * FROM teams WHERE comp_id=:comp_id ORDER BY score DESC, timestamp ASC LIMIT 10 OFFSET :offset", comp_id=comp_id, offset=offset)
-    scores_10 = list(scores_10)
+    # if team have not solved before, update team score
+    team_solved = list(db.query(
+        '''SELECT * FROM
+        flags f JOIN team_player tp JOIN teams t
+        ON
+        f.user_id = tp.user_id AND tp.team_id = t.id
+        WHERE
+        f.task_id = :task_id AND f.comp_id = :comp_id AND t.id = :team_id''',
+        task_id=task_id, user_id=user_id, comp_id=comp_id, team_id=team_id))
 
-    # Render template
-    render = render_template('frame.html', lang=lang, page='scoreboard.html',
-            user=user, scores=scores_10)
-    return make_response(render)
+    if len(user_solved) == 0:
+        # if not, add new flag to db
+        flag = dict(
+            task_id = task_id,
+            user_id = user_id,
+            comp_id = comp_id,
+            timestamp = timestamp
+        )
+        db['flags'].insert(flag)
 
+    if len(team_solved) == 0:
+        task_competition = db['task_competition'].find_one(task_id = task_id, comp_id = comp_id)
+        team['score'] += task_competition['score']
+        team['timestamp'] = timestamp
+        db['teams'].update(team, ['id'])
 
-@app.route('/scoreboard.json')
-def scoreboard_json():
-    scores = db.query('''select u.username, ifnull(sum(f.score), 0) as score,
-        max(timestamp) as last_submit from users u left join flags f
-        on u.id = f.user_id where u.isHidden = 0 group by u.username
-        order by score desc, last_submit asc''')
-
-    scores = list(scores)
-
-    return Response(json.dumps(scores), mimetype='application/json')
+    return jsonify(
+        {
+            'success': True,
+            'score': team['score'],
+            'total_score': get_comp_score(comp_id),
+            'rank': get_team_rank(comp_id, team_id),
+            'total_teams': competition['teams']
+        }
+    )
 
 
-
-@app.route('/delete/<postID>', methods=['POST'])
-@login_required
-def deleteCompetitions(postID):
-
-    user = get_user()
-    if user["admin"]:
-        competitions = db.query('''delete from competitions where id = ''' + postID)
-        #flash('Lista deletada com sucesso')
-    
-    return redirect('/competitions')
-
+'''
 @app.route('/competitions.json')
 def competitions_json():
-    competitions = db.query('''select * from competitions''')
+    competitions = db.query("""select * from competitions""")
 
     competitions = list(competitions)
 
@@ -924,6 +1046,7 @@ def about():
     render = render_template('frame.html', lang=lang, page='about.html',
         user=user)
     return make_response(render)
+'''
 
 """ Filters """
 @app.template_filter('date')

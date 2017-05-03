@@ -2,19 +2,19 @@
 
 {% block page %}
 <div class="ui container main">
-  <h1 class="ui inverted header">{{ lang.addcompetition.add_title }} </h1>
+  <h1 class="ui inverted header">{{ lang.competitions.new }} </h1>
   <form class="ui form segment" method="post">
     <div class="field">
-      <label>{{ lang.addcompetition.name_label }}</label>
-      <input name="name" type="text" required="required" class="form-control" />
+      <label>{{ lang.competitions.name }}</label>
+      <input name="name" type="text" class="ui input" required>
     </div>
 
     <div class="field">
-      <label>{{ lang.addcompetition.description_label }}</label>
-      <textarea name="desc" rows="3"></textarea>
+      <label>{{ lang.competitions.description }}</label>
+      <textarea name="desc" rows="3" class="ui input"></textarea>
     </div>
 
-    <input type="submit" class="ui primary button" />
+    <button type="submit" class="ui primary button">{{ lang.competitions.new }}</button>
   </form>
 </div>
 {% endblock page %}

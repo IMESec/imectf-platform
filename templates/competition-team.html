@@ -12,11 +12,11 @@
       <div class="ui dividing header">{{ lang.team.competition_header }}</div>
       <div class="field">
         <label>{{ lang.team.rank }}</label>
-        <span>131th</span>
+        <span>{{ rank }} / {{ competition.teams }}</span>
       </div>
       <div class="field">
         <label class="ui center aligned">{{ lang.team.score }}</label>
-        <span>3265 pts</span>
+        <span>{{ team.score }} / {{ total_score }} {{ lang.competition.pts }}</span>
       </div>
     </div>
   </div>

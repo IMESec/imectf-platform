@@ -26,14 +26,43 @@
     <div class="ui horizontal divider">
       {{ lang.competition.submit }}
     </div>
-    <div class="ui fluid action left corner labeled input">
-      <input type="text" placeholder="{{ lang.competition.submit_placeholder }}">
-      <button class="ui icon basic button">
+    <form id="submit-form" class="ui fluid action left corner labeled input" action="/competition/{{ competition.id }}/task/{{ task.id }}/submit">
+      <input {% if done %}class="accepted"{% endif %} name="flag" type="text" placeholder="{{ lang.competition.submit_placeholder }}">
+      <button type="submit" class="ui icon basic button">
         <i class="send icon"></i>
       </button>
       <div class="ui left corner label">
         <i class="flag icon"></i>
       </div>
-    </div>
+    </form>
   </div>
 </div>
+<script>
+$(function() {
+  $('#submit-form').submit(function(event) {
+    event.preventDefault();
+
+    var data = new FormData($(this)[0]);
+    var url = $(this).attr('action');
+
+    ajaxQuery(url, data,
+      function(res) {
+        if (res['success']) {
+          $('input[name=flag]').removeClass('wrong');
+          $('input[name=flag]').addClass('accepted');
+          menuSolveTask({{ task.id }});
+          menuUpdateScore(res['score'], res['total_score']);
+          menuUpdateRank(res['rank'], res['total_teams']);
+        } else {
+          $('input[name=flag]').removeClass('accepted');
+          $('input[name=flag]').addClass('wrong');
+        }
+      },
+      function() {
+      }
+    );
+
+    return false;
+  });
+});
+</script>

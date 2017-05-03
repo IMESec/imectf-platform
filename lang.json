@@ -86,6 +86,7 @@
       "launch": "Launch in 3...",
 
       "competition": "Competition",
+      "pts": "pts",
       "time": "Time Remaining",
       "stats": "Statistics",
       "team": "Team",
@@ -127,7 +128,8 @@
       "date_start": "Start Date",
       "date_end": "End Date",
       "enter": "Enter",
-      "new": "New Competition"
+      "new": "New Competition",
+      "create": "Create"
     },
     "error": {
       "title": "Erro",
@@ -142,29 +144,6 @@
       "not_started": "A competição ainda não começou!",
       "finished": "A competição já acabou!",
       "competition_not_found": "Competition not found!"
-    },
-
-
-
-
-    "addcompetition" : {
-      "add_title": "Nova competição",
-      "edit_title": "Editar competição",
-      "delete_title": "Deletar competição",
-      "delete_desc": "Tem certeza de que deseja deletar esta competição?",
-      "name_label": "Nome da competição: ",
-      "description_label": "Descrição: ",
-      "date_start": "Data de início" ,
-      "date_end": "Data de término" ,
-      "num_participants": "Quantidade de participantes"
-    },
-    "scoreboard": {
-      "title": "Scoreboard",
-      "player": "Player",
-      "score": "Pontuação"
-    },
-    "chat":{
-      "title": "Chat"
     }
   }
 }

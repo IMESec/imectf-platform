@@ -65,17 +65,19 @@ $(function() {
     processData: false,
   });
 
-  ajaxQuery = function(url, data, callback) {
+  ajaxQuery = function(url, data, success, error) {
     $('.task-loading').dimmer('show');
     $.ajax({ url: url, data: data })
       .always(function() { $('.task-loading').dimmer('hide'); })
       .done(function(res) {
-        if (callback)
-          callback(res);
+        if (success)
+          success(res);
       })
       .fail(function() {
         $('.task-loading').dimmer('hide');
         console.log('error');
+        if (error)
+          error();
       });
   };
 

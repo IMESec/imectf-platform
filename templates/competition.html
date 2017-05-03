@@ -16,10 +16,7 @@ $(function() {
     }
   });
 
-  function bindElements() {
-    $('.task-hint').accordion();
-  }
-
+  function bindElements() { $('.task-hint').accordion(); }
   bindElements();
 
   window.onpopstate = function(event) {
@@ -37,6 +34,11 @@ $(function() {
       bindElements();
     });
   });
+
+  /* task display stuff */
+  menuSolveTask = function(id) { $('[data-id='+id+']').addClass('accepted'); }
+  menuUpdateScore = function(score, total) { $('#team-score').text( score.toString() + ' / ' + total.toString() + ' {{ lang.competition.pts }}'); }
+  menuUpdateRank = function(rank, total) { $('#team-rank').text( rank.toString() + ' / ' + total.toString()); }
 
   {% if running %}
   function setTime() {
@@ -100,7 +102,7 @@ $(function() {
 
         <div class="item ui">
           <div class="right floated content score">
-            <div class="header">3265 / 6000 pts</div>
+            <div class="header" id="team-score">{{ team.score }} / {{ total_score }} {{ lang.competition.pts }}</div>
           </div>
 
           <a class="accordion-title active">
@@ -147,9 +149,9 @@ $(function() {
               </div>
             </a>
 
-            <a class="item task-explorer content-load" href="/competition/{{ competition.id }}/leaderboard">
+            <a class="item task-explorer content-load" href="/competition/{{ competition.id }}/leaderboard/0">
               <div class="right floated content team-name">
-                <div class="header">131th / 1000</div>
+                <div class="header" id="team-rank">{{ rank }} / {{ competition.teams }}</div>
               </div>
               <i class="trophy icon"></i>
 
@@ -175,7 +177,7 @@ $(function() {
 
             {% for task in tasks if task.category == category.id %}
 
-            <a class="item task-explorer content-load" href="/competition/{{ competition.id }}/task/{{ task.id }}">
+            <a data-id="{{ task.id }}" class="item task-explorer content-load {% if task.id in tasks_done %}accepted{% endif %}" href="/competition/{{ competition.id }}/task/{{ task.id }}">
               <div class="right floated content">
                 <div class="header">{{ "%+d" | format(task.score) }}</div>
               </div>
