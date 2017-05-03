@@ -37,7 +37,7 @@ chmod 700 `which users`
 chmod 700 `which w`
 chmod 700 `which wall`
 chmod 700 `which who`
-chmod 700 `which write
+chmod 700 `which write`
 
 # isolate users
 mount -o remount,hidepid=2 /proc
