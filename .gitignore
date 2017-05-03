@@ -1,1 +1,21 @@
 ctf.db
+
+# Flask stuff:
+instance/
+.webassets-cache
+
+# dotenv
+.env
+
+# virtualenv
+.venv
+venv/
+ENV/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
