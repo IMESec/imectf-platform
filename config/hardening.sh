@@ -39,6 +39,12 @@ chmod 700 `which wall`
 chmod 700 `which who`
 chmod 700 `which write`
 
+# restrict access to /proc/maps/
+sed -i 's/^exit 0$//' /etc/rc.local
+echo -e 'mount -o remount,hidepid=2 /proc\n' >> /etc/rc.local
+mount -o remount,hidepid=2 /proc
+chmod 551 /proc
+
 # isolate users
 mount -o remount,hidepid=2 /proc
 chmod 1733 /tmp /var/tmp /dev/shm
