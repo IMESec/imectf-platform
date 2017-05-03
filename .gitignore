@@ -1,5 +1,9 @@
 ctf.db
 
+# Temp files
+*.swp
+*.swo
+
 # Flask stuff:
 instance/
 .webassets-cache
