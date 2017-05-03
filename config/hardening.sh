@@ -14,10 +14,14 @@ if [ "$USER" != 'root' ]; then
   exit
 fi
 
+# update system
+apt-get update
+apt-get -y upgrade
+
 # restricting access mostly means make root accessible only, chmod 700 or s/t
 chmod 700 `which dmesg`
 chmod 700 `which fuser`
-chmod 700 `which htop`
+#chmod 700 `which htop`
 chmod 700 `which kill`
 chmod 700 `which killall`
 chmod 700 `which lsof`
@@ -28,7 +32,7 @@ chmod 700 `which screen`
 chmod 700 `which su`
 chmod 700 `which tmux`
 chmod 700 `which top`
-chmod 700 `which ulimit`
+#chmod 700 `which ulimit`
 chmod 700 `which users`
 chmod 700 `which w`
 chmod 700 `which wall`
@@ -57,3 +61,16 @@ touch /etc/cron.allow
 # copy security config files
 cp limits.conf /etc/security/limits.conf
 cp sysctl.conf /etc/sysctl.conf
+
+# This needs to be here
+echo 'exit 0' >> /etc/rc.local
+
+echo '*** DONE! ***'
+echo -n 'reboot now? (y/n): '
+read REBOOT
+if [ "$REBOOT" == 'y' ]; then
+    reboot
+else
+    echo 'You must reboot for certain settings to kick in'
+    echo 'Please reboot soon'
+fi
