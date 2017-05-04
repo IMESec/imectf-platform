@@ -7,6 +7,7 @@ from os import path, makedirs
 from spur import LocalShell
 from time import time
 from signal import SIGKILL 
+from crypt import crypt
 
 class TimeoutError(Exception):
     """
@@ -55,4 +56,4 @@ def create_user(username, password):
 
     """
 
-    execute(["useradd", "-s", "/bin/bash", "-p", password, username])
+    execute(["useradd", "-s", "/bin/bash", "-g", "competitors", "-m", "-p", crypt(password, "42"), username])

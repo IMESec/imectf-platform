@@ -11,6 +11,7 @@ import os
 import dateparser
 import bleach
 import re
+import string
 from datetime import datetime
 
 from spur import LocalShell
@@ -309,7 +310,7 @@ def login():
     from werkzeug.security import generate_password_hash
 
     username = bleach.clean(request.form['username'], tags=[])
-    password = bleach.clean(request.form['password'], tags=[])
+    password = request.form['password']
     if not username:
         return redirect('/error/empty_user')
 

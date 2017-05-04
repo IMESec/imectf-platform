@@ -14,16 +14,21 @@ if [ "$USER" != 'root' ]; then
   exit
 fi
 
-pushd ..
-
 # update system
 apt-get update
 apt-get -y upgrade
-apt install shellinabox python-dev python-pip sqlite3
+apt install shellinabox python-dev python-pip sqlite3 openssl
 pip install --upgrade pip
 pip install virtualenv
-. env/bin/activate
+virtualenv venv
+source venv/bin/activate
 pip install -r requirements.txt
+
+# create group
+groupadd competitors
+
+# disable motd
+chmod -x /etc/update-motd.d/*
 
 # restricting access mostly means make root accessible only, chmod 700 or s/t
 chmod 700 `which dmesg`
@@ -71,14 +76,20 @@ echo 'kernel.randomize_va_space = 0' > /etc/sysctl.d/01-disable-aslr.conf
 # disable crontab
 touch /etc/cron.allow
 
-popd
-
 # copy security config files
-ln -s limits.conf /etc/security/limits.conf
-ln -s sysctl.conf /etc/sysctl.conf
-ln -s imectf.service /etc/systemd/system/imectf.service
-ln -s nginx /etc/nginx/sites-available/ctf.imesec.org
-ln -s nginx /etc/nginx/sites-enabled/ctf.imesec.org
+cp config/limits.conf /etc/security/limits.conf
+cp config/sysctl.conf /etc/sysctl.conf
+cp config/imectf.service /etc/systemd/system/imectf.service
+
+cp config/ctf.nginx /etc/nginx/sites-available/ctf.imesec.org
+ln -s /etc/nginx/sites-available/ctf.imesec.org /etc/nginx/sites-enabled/ctf.imesec.org
+
+cp config/shell.nginx /etc/nginx/sites-available/shell.imesec.org
+ln -s /etc/nginx/sites-available/shell.imesec.org /etc/nginx/sites-enabled/shell.imesec.org
+cp config/shellinabox /etc/default/shellinabox
+
+systemctl start imectf
+systemctl enable imectf
 
 # This needs to be here
 echo 'exit 0' >> /etc/rc.local
