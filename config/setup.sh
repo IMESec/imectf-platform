@@ -24,6 +24,8 @@ virtualenv venv
 source venv/bin/activate
 pip install -r requirements.txt
 
+bash config/buildTables.sh
+
 # create group
 groupadd competitors
 
