@@ -13,6 +13,9 @@ import bleach
 import re
 from datetime import datetime
 
+from spur import LocalShell
+from utils import create_user
+
 from base64 import b64decode
 from functools import wraps
 
@@ -48,6 +51,26 @@ def _set_sqlite_pragma(dbapi_connection, connection_record):
         cursor = dbapi_connection.cursor()
         cursor.execute("PRAGMA foreign_keys=ON;")
         cursor.close()
+
+
+def sanitize_name(name):
+    """
+    Sanitize a given name such that it conforms to unix policy.
+    Args:
+        name: the name to sanitize.
+    Returns:
+        The sanitized form of name.
+    """
+
+    if len(name) == 0:
+        raise Exception("Can not sanitize an empty field.")
+
+    sanitized_name = re.sub(r"[^a-z0-9\+-]", "-", name.lower())
+
+    if sanitized_name[0] in string.digits:
+        sanitized_name = "p" + sanitized_name
+
+    return sanitized_name
 
 
 def login_required(f):
@@ -305,8 +328,11 @@ def login():
     if 'register-button' in request.form:
         """Attempts to register a new user"""
 
+        shell_username = sanitize_name(username)
+
         user_found = db['users'].find_one(username=username)
-        if user_found:
+        shell_found = db['users'].find_one(shell_username=shell_username)
+        if user_found or shell_found:
             return redirect('/error/already_registered')
 
         admin = False
@@ -316,9 +342,10 @@ def login():
         if userCount == 0:
             admin = True
 
-        new_user = dict(username=username,
-            password=generate_password_hash(password), admin=admin)
+        new_user = dict(username=username, password=generate_password_hash(password), admin=admin, shell_username=shell_username)
         db['users'].insert(new_user)
+
+        create_user(shell_username, password)
 
         # Set up the user id for this session
         session_login(username)

@@ -76,7 +76,7 @@ popd
 # copy security config files
 ln -s limits.conf /etc/security/limits.conf
 ln -s sysctl.conf /etc/sysctl.conf
-ln -s imectf.conf /etc/init/imectf.conf
+ln -s imectf.service /etc/systemd/system/imectf.service
 ln -s nginx /etc/nginx/sites-available/ctf.imesec.org
 ln -s nginx /etc/nginx/sites-enabled/ctf.imesec.org
 
