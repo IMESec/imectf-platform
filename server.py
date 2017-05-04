@@ -463,7 +463,7 @@ def competition_remove_task(comp_id):
 
 
 def competition_page(comp_id, page, **kwargs):
-    competition = db['competitions'].find_one(id=comp_id)
+    competition = get_competition(comp_id)
     if not competition:
         return redirect('/error/competition_not_found')
 

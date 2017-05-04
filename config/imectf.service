@@ -3,11 +3,8 @@ Description=Gunicorn instance to serve imectf
 After=network.target
 
 [Service]
-User=root
-Group=www-data
 WorkingDirectory=/srv/ctf
-Environment="PATH=/srv/ctf/env/bin"
-ExecStart=/srv/ctf/env/bin/gunicorn --workers 3 --bind unix:imectf.sock -m 007 server:app
+ExecStart=/srv/ctf/venv/bin/gunicorn --workers 1 --bind unix:imectf.sock server:app
 
 [Install]
 WantedBy=multi-user.target

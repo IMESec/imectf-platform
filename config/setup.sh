@@ -14,6 +14,8 @@ if [ "$USER" != 'root' ]; then
   exit
 fi
 
+source config/.KEY
+
 # update system
 apt-get update
 apt-get -y upgrade
@@ -23,6 +25,7 @@ pip install virtualenv
 virtualenv venv
 source venv/bin/activate
 pip install -r requirements.txt
+deactivate
 
 bash config/buildTables.sh
 
