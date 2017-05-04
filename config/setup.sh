@@ -17,7 +17,8 @@ fi
 # update system
 apt-get update
 apt-get -y upgrade
-apt install shellinabox
+apt install shellinabox python-dev python-pip sqlite3
+pip install -r requirements.txt
 
 # restricting access mostly means make root accessible only, chmod 700 or s/t
 chmod 700 `which dmesg`
