@@ -89,8 +89,6 @@ cp config/imectf.service /etc/systemd/system/imectf.service
 cp config/ctf.nginx /etc/nginx/sites-available/ctf.imesec.org
 ln -s /etc/nginx/sites-available/ctf.imesec.org /etc/nginx/sites-enabled/ctf.imesec.org
 
-cp config/shell.nginx /etc/nginx/sites-available/shell.imesec.org
-ln -s /etc/nginx/sites-available/shell.imesec.org /etc/nginx/sites-enabled/shell.imesec.org
 cp config/shellinabox /etc/default/shellinabox
 
 systemctl start imectf
