@@ -14,12 +14,16 @@ if [ "$USER" != 'root' ]; then
   exit
 fi
 
+pushd ..
+
 # update system
 apt-get update
 apt-get -y upgrade
 apt install shellinabox python-dev python-pip sqlite3
 pip install --upgrade pip
-pip install -r ../requirements.txt
+pip install virtualenv
+. env/bin/activate
+pip install -r requirements.txt
 
 # restricting access mostly means make root accessible only, chmod 700 or s/t
 chmod 700 `which dmesg`
@@ -67,9 +71,14 @@ echo 'kernel.randomize_va_space = 0' > /etc/sysctl.d/01-disable-aslr.conf
 # disable crontab
 touch /etc/cron.allow
 
+popd
+
 # copy security config files
-cp limits.conf /etc/security/limits.conf
-cp sysctl.conf /etc/sysctl.conf
+ln -s limits.conf /etc/security/limits.conf
+ln -s sysctl.conf /etc/sysctl.conf
+ln -s imectf.conf /etc/init/imectf.conf
+ln -s nginx /etc/nginx/sites-available/ctf.imesec.org
+ln -s nginx /etc/nginx/sites-enabled/ctf.imesec.org
 
 # This needs to be here
 echo 'exit 0' >> /etc/rc.local
