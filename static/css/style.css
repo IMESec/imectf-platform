@@ -385,5 +385,5 @@ a.task-explorer.accepted > i.flag.icon {
   border: none;
   position: absolute;
   height: calc(100% - 20px);
-  width: calc(100% - 20px);
+  width: calc(100% - 10px);
 }
