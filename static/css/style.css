@@ -383,6 +383,7 @@ a.task-explorer.accepted > i.flag.icon {
 
 .webshell iframe {
   border: none;
-  height: calc(100% -20px);
-  width: calc(100% -20px);
+  position: absolute;
+  height: calc(100% - 20px);
+  width: calc(100% - 20px);
 }
