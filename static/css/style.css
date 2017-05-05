@@ -172,7 +172,7 @@ input.wrong {
   background-color: rgb(255, 192, 192) !important;
 }
 
-.competition-shell {
+.competition-shell-wrapper {
   position: relative;
   float: left;
   display: table-cell;
@@ -190,6 +190,15 @@ input.wrong {
     border-right: none;
     border-bottom: 2px #111 solid;
   }
+
+  .competition-content-wrapper {
+    height: auto;
+  }
+
+  .competition-shell-wrapper {
+    height: auto;
+    min-height: 450px;
+  }
 }
 
 /* Small and Medium monitor: content atop shell */
@@ -200,7 +209,7 @@ input.wrong {
     overflow: auto;
   }
 
-  .competition-shell {
+  .competition-shell-wrapper {
     height: 50%;
     width: 100%;
   }
@@ -354,4 +363,26 @@ a.task-explorer.accepted > i.flag.icon {
 .countdown-timer {
   margin-left: auto !important;
   margin-right: auto !important;
+}
+
+/* Webshell */
+.competition-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+}
+
+.webshell {
+  position: relative;
+  flex: 1 0 auto;
+  position: relative;
+  padding: 10px;
+  background: black;
+}
+
+.webshell iframe {
+  border: none;
+  height: calc(100% -20px);
+  width: calc(100% -20px);
 }
