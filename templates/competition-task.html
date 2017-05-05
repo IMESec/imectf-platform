@@ -53,12 +53,15 @@ $(function() {
           menuSolveTask({{ task.id }});
           menuUpdateScore(res['score'], res['total_score']);
           menuUpdateRank(res['rank'], res['total_teams']);
+          $('#success-modal').modal('show');
         } else {
           $('input[name=flag]').removeClass('accepted');
           $('input[name=flag]').addClass('wrong');
+          $('#fail-modal').modal('show');
         }
       },
       function() {
+          $('#error-modal').modal('show');
       }
     );
 
