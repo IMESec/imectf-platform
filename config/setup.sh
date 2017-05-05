@@ -81,6 +81,10 @@ echo 'kernel.randomize_va_space = 0' > /etc/sysctl.d/01-disable-aslr.conf
 # disable crontab
 touch /etc/cron.allow
 
+# disable bash history
+rm /etc/skel/.bash_history
+ln -s /dev/null /etc/skel/.bash_history
+
 # copy security config files
 cp config/limits.conf /etc/security/limits.conf
 cp config/sysctl.conf /etc/sysctl.conf
