@@ -15,7 +15,9 @@
         <i class="dropdown icon"></i>
       </div>
       <div class="content">
+        {% autoescape false %}
         {{ task.hint }}
+        {% endautoescape %}
       </div>
     </div>
     {% endif %}

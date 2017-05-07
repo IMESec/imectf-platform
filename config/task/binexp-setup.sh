@@ -36,7 +36,7 @@ cp "$1" $dir
 bin=$dir/"$1"
 chown oracle $bin
 chgrp $user $bin
-chmod 2755 $bin
+chmod 2750 $bin
 echo "Configured binary"
 
 # change flag owner if exists
@@ -52,11 +52,12 @@ fi
 
 # FIXME exec: Exec format error
 # create run.sh
-#run=$dir/run.sh
-#(echo -e "exec timeout -s9 5m $bin") > $run
-#chown oracle $run
-#chgrp $user $run
-#chmod 2755 $run
+run=$dir/run.sh
+(echo  "#!/bin/bash" \
+; echo "exec timeout -s9 5m $bin") > $run
+chown oracle $run
+chgrp $user $run
+chmod 2750 $run
 
 # create service
 serv=/etc/systemd/system/$user.service
@@ -67,7 +68,9 @@ serv=/etc/systemd/system/$user.service
 ; echo "[Service]" \
 ; echo "User=$user" \
 ; echo "WorkingDirectory=$dir" \
-; echo "ExecStart=/usr/bin/ncat -lvkp $port -e $bin" \
+; echo "ExecStart=/usr/bin/ncat -lvkp $port -e $run" \
+; echo "Restart=always" \
+; echo "RestartSec=0" \
 ; echo \
 ; echo "[Install]" \
 ; echo "WantedBy=multi-user.target") > $serv

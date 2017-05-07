@@ -28,7 +28,7 @@ dir=/problems/$(echo -n "$1$2" | md5sum | cut -d ' ' -f 1)
 mkdir -p $dir
 chown oracle $dir
 chgrp $user $dir
-chmod 1750 $dir
+chmod 771 $dir
 echo "Created directory: $dir"
 
 cp -r * $dir
@@ -37,9 +37,9 @@ echo "Copied files"
 bin=$dir/"$1"
 
 # change bin owner
-chown oracle $bin
-chgrp $user $bin
-chmod 2755 $bin
+chown oracle $dir/*
+chgrp $user $dir/*
+chmod 775 $dir/*
 echo "Changed script permissions"
 
 # create service
@@ -51,7 +51,9 @@ serv=/etc/systemd/system/$user.service
 ; echo "[Service]" \
 ; echo "User=$user" \
 ; echo "WorkingDirectory=$dir" \
-; echo "ExecStart=/usr/bin/ncat -lvkp $port -e $bin" \
+; echo "ExecStart=$bin" \
+; echo "Restart=always" \
+; echo "RestartSec=0" \
 ; echo \
 ; echo "[Install]" \
 ; echo "WantedBy=multi-user.target") > $serv

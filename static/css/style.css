@@ -222,6 +222,7 @@ input.wrong {
 /* task explorer */
 .ui.list {
   padding-top: 12px !important;
+  padding-bottom: 12px !important;
 }
 
 .ui.list i.icon {

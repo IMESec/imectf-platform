@@ -42,7 +42,7 @@ $(function() {
 
   {% if running %}
   function setTime() {
-    var d = moment.duration(moment('{{ competition.date_end }}', 'YYYY-MM-DD HH:mm').diff(moment().utc()));
+    var d = moment.duration(moment.utc('{{ competition.date_end }}', 'YYYY-MM-DD HH:mm').diff(moment()));
     $('#time').text(
       (d.days() > 0 ? d.days() + ' d ' : '') +
       d.hours() + ' h ' +
@@ -166,14 +166,14 @@ $(function() {
         {% for category in categories %}
 
         <div class="item">
-          <a class="accordion-title active">
+          <a class="accordion-title">
             <i class="folder open icon"></i>
             <div class="content">
               <div class="header">{{ category.name }}</div>
             </div>
           </a>
 
-          <div class="list accordion-content active">
+          <div class="list accordion-content">
 
             {% for task in tasks if task.category == category.id %}
 

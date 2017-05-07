@@ -21,10 +21,7 @@
         {% endfor %}
       </tbody>
     </table>
-  </div>
-</div>
-<div class="ui centered grid leaderboard-pagination input-flag">
-  <div class="center aligned column">
+    <div class="ui center aligned basic segment">
     <div class="ui center aligned borderless pagination menu">
       {% if offset > 0 -%}
       <a class="item content-load" href="/competition/{{ competition.id }}/leaderboard/{{ offset - 1 }}"><i class="chevron left icon"></i></a>
@@ -39,6 +36,7 @@
       {%- else -%}
       <div class="disabled item"><i class="chevron right icon"></i></div>
       {%- endif %}
+    </div>
     </div>
   </div>
 </div>
