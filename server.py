@@ -163,9 +163,7 @@ def is_running(comp_id):
     startDate = datetime.strptime(competition['date_start'], "%Y-%m-%d %H:%M")
     endDate = datetime.strptime(competition['date_end'], "%Y-%m-%d %H:%M")
 
-    if datetime.utcnow() > startDate and datetime.utcnow()< endDate:
-        return True
-        #db.query('UPDATE competitions SET running=1 WHERE id=:comp_id', comp_id=comp_id)
+    return datetime.utcnow() > startDate and datetime.utcnow() < endDate:
 
 
 def get_time_remaining(comp_id):
@@ -1037,7 +1035,7 @@ def submit(comp_id, task_id):
         )
         db['flags'].insert(flag)
 
-    if len(team_solved) == 0:
+    if len(team_solved) == 0 and is_running(comp_id):
         task_competition = db['task_competition'].find_one(task_id = task_id, comp_id = comp_id)
         team['score'] += task_competition['score']
         team['timestamp'] = timestamp

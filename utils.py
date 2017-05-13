@@ -57,3 +57,4 @@ def create_user(username, password):
     """
 
     execute(["useradd", "-s", "/bin/bash", "-g", "competitors", "-m", "-p", crypt(password, "42"), username])
+    execute(["chmod", "700", "/home/"+username])
